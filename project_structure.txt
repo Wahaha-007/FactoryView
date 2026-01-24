@@ -1,0 +1,36 @@
+Directory Structure for: AssetManage/
+==================================================
+    index.html
+    [assets/]
+        Floor1 - Copy.png
+        Floor1.png
+        floor_1_data.xlsx
+        floor_2_data.xlsx
+        floor_3_data.xlsx
+        floor_4_data.xlsx
+        system_config.xlsx
+    [css/]
+        style.css
+    [js/]
+        Application.js
+        CameraManager.js
+        DataLoader.js
+        EditorManager.js
+        FloorManager.js
+        InputManager.js
+        LayerManager.js
+        SceneManager.js
+        UIManager.js
+        main.js
+        [core/]
+            AssetFactory.js
+            Materials.js
+        [editor/]
+            AddItemModal.js
+            ContextMenu.js
+            DataExporter.js
+            DragController.js
+        [ui/]
+            ElevatorPanel.js
+            LayerPanel.js
+            PropertiesPanel.js

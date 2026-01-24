@@ -1,0 +1,244 @@
+/* =========================================
+   1. VARIABLES & THEME
+   ========================================= */
+:root {
+    --bg-color: #222;
+    --panel-bg: #2a2a2a;
+    --panel-item-bg: #252525;
+    --text-color: #eee;
+    --text-muted: #aaa;
+    --border-color: #444;
+    --accent-color: #00d2ff;
+    --danger-color: #ff4444;
+    --success-color: #44ff44;
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body.blueprint-mode {
+    --bg-color: #000;
+    --panel-bg: #111;
+    --panel-item-bg: #000;
+    --text-color: #aaccff;
+    --border-color: #333;
+    --accent-color: #00ffff;
+}
+
+/* =========================================
+   2. BASE & LAYOUT
+   ========================================= */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-main);
+    display: flex;
+    height: 100vh;
+}
+
+/* Layout Columns */
+#panel-left {
+    width: 250px;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--border-color);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+}
+
+#canvas-container {
+    flex-grow: 1;
+    position: relative;
+    background: #fff; /* Canvas itself usually covers this */
+    overflow: hidden;
+}
+
+#panel-right {
+    width: 300px;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+}
+
+#panel-right-top {
+    height: 60%;
+    padding: 15px;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#panel-right-bottom {
+    height: 40%;
+    padding: 15px;
+    background: var(--panel-item-bg);
+    overflow-y: auto;
+}
+
+/* =========================================
+   3. TYPOGRAPHY & UTILITIES
+   ========================================= */
+h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 20px 0;
+}
+
+.hint {
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 10px;
+}
+
+/* =========================================
+   4. COMPONENTS: BUTTONS & INPUTS
+   ========================================= */
+button {
+    width: 100%;
+    padding: 10px;
+    cursor: pointer;
+    background: var(--border-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+button:hover { background: #555; }
+
+/* Specific Toggle Button (Theme) */
+#btn-theme {
+    position: absolute;
+    top: 10px;
+    right: 320px;
+    z-index: 100;
+    width: auto;
+    padding: 8px 15px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    font-weight: bold;
+}
+
+/* =========================================
+   5. COMPONENTS: LISTS & ITEMS
+   ========================================= */
+/* Left Panel: Checkboxes */
+.layer-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    cursor: pointer;
+}
+.layer-item input { margin-right: 10px; transform: scale(1.2); }
+
+/* Right Panel: Item List */
+#item-list { list-style: none; padding: 0; margin: 0; }
+
+#item-list li {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#item-list li:hover { background: #333; color: #fff; }
+#item-list li.selected { background: #007acc; color: white; }
+
+.list-item-left { display: flex; align-items: center; gap: 8px; }
+.list-status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.list-status-active { background-color: var(--success-color); box-shadow: 0 0 2px var(--success-color); }
+.list-status-inactive { background-color: var(--danger-color); }
+
+/* =========================================
+   6. COMPONENTS: OVERLAYS & 3D UI
+   ========================================= */
+/* Loading Screen */
+#loading {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8); padding: 20px; border-radius: 8px; z-index: 999;
+}
+
+/* 3D Labels (CSS2D) */
+.label {
+    color: #FFF;
+    font-family: sans-serif;
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-left: 3px solid var(--accent-color);
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    pointer-events: auto;
+    font-size: var(--label-size, 12px);
+    margin-top: var(--label-offset, -20px);
+    transition: font-size 0.1s, margin-top 0.1s;
+    transition: opacity 1s ease-in-out; 
+}
+.label:hover {
+    background: rgba(0, 0, 0, 0.9);
+    border-left-color: #ffcc00;
+    z-index: 999;
+}
+
+/* Status Dots in Labels */
+.status-dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; margin-right: 6px;
+    border: 1px solid rgba(255,255,255,0.5);
+}
+.status-active { background-color: var(--success-color); box-shadow: 0 0 4px var(--success-color); }
+.status-inactive { background-color: var(--danger-color); box-shadow: 0 0 4px var(--danger-color); }
+
+/* Elevator Panel (Floating) */
+#elevator-panel {
+    /* Styles are injected by JS, but you can move them here if you want fixed CSS */
+}
+
+/* =========================================
+   7. COMPONENTS: MODALS & DETAILS
+   ========================================= */
+/* Edit Modal */
+#edit-modal {
+    display: none;
+    position: fixed;
+    background: #333;
+    border: 1px solid #555;
+    padding: 15px;
+    border-radius: 4px;
+    width: 250px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+#edit-modal input, #edit-modal select {
+    width: 100%; padding: 6px; margin-top: 4px;
+    background: #222; border: 1px solid #444; color: #fff;
+    border-radius: 3px;
+}
+#edit-modal button#btn-confirm:hover { background: #00bfff; }
+
+/* Details Panel Warnings */
+.audit-warning {
+    margin-top: 10px; padding: 10px;
+    background: rgba(255, 0, 0, 0.2);
+    border-left: 3px solid var(--danger-color);
+    color: #ffcccc; font-size: 0.9rem;
+    display: flex; align-items: center;
+}
+.audit-ok {
+    color: #88ff88; font-size: 0.8rem; margin-top: 5px;
+}
