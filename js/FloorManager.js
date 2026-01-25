@@ -44,45 +44,56 @@ export class FloorManager {
     async setupFloor(floorConfig, index) {
         const yOffset = index * this.FLOOR_GAP;
 
-        // 1. Load Texture
+        // 1. Load Texture (Supports .png, .jpg, .svg)
         const texture = await new THREE.TextureLoader().loadAsync(floorConfig.map_file);
         texture.colorSpace = THREE.SRGBColorSpace; 
+        
+        // IMPROVEMENT: Optimize texture filters for clearer lines (crucial for SVG maps)
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = true; 
+        // Maximize anisotropy if available for sharp angled views
+        const maxAnisotropy = this.sceneManager.renderer.capabilities.getMaxAnisotropy();
+        texture.anisotropy = maxAnisotropy;
 
         // 2. Geometry & Material
-        const geometry = new THREE.PlaneGeometry(texture.image.width, texture.image.height);
+        // Safety check: specific SVGs might report 0 dimensions if viewBox is missing
+        const width = texture.image.width || 2000; 
+        const height = texture.image.height || 1000;
+
+        const geometry = new THREE.PlaneGeometry(width, height);
+        
+        // Detect file type for specific material settings
+        const isSVG = floorConfig.map_file.toLowerCase().endsWith('.svg');
+
         const material = new THREE.MeshBasicMaterial({
             map: texture,
             side: THREE.DoubleSide,
             transparent: true,
             opacity: 1,
-            // FIX FOR PNGs:
-            alphaTest: 0.1, // Discard pixels with opacity < 0.1
-            depthWrite: false // Usually good for transparent overlays, try true if issues persist
+            // IMPROVEMENT: Lower alphaTest for SVGs to preserve anti-aliased edges, 
+            // keep 0.1 for PNGs to crop empty space cleanly.
+            alphaTest: isSVG ? 0.0 : 0.1, 
+            depthWrite: false 
         });
 
         // 3. Mesh
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotateX(-Math.PI / 2);
+        mesh.rotation.x = -Math.PI / 2;
         mesh.position.y = yOffset;
-        mesh.userData = { floorIndex: index, floorId: floorConfig.id };
         
-        // Save original material for blueprint toggle
-        mesh.userData.originalMat = material;
+        // IMPORTANT: Store ID for filtering
+        mesh.userData.floorId = floorConfig.id || floorConfig.name;
+        mesh.userData.isFloor = true;
 
         this.sceneManager.scene.add(mesh);
         this.floorMeshes.push(mesh);
-
-        console.log(`[FloorManager] Loading items for Floor ${floorConfig.id} from file: ${floorConfig.data_file}`);
-
-        // 4. Load Items
-        const items = await this.dataLoader.loadFloorData(floorConfig.data_file);
-        console.log(`[FloorManager] Loaded ${items.length} items for Floor ${floorConfig.id}`);
         
-        items.forEach(item => {
-            item.floorId = floorConfig.id; // Tag for filtering
-            this.layerManager.addItem(item, yOffset);
-        });
+        // Store config for reference
+        this.floors[index].mesh = mesh;
+        this.floors[index].y = yOffset;
     }
+
 
     /* --- NAVIGATION / ISOLATION --- */
     toggleFloorIsolation(index) {
