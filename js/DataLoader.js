@@ -39,8 +39,10 @@ export class DataLoader {
                             x: row.X,
                             y: row.Y,
                             desc: row.Description,
-                            status: row.Status || "Active", // Default to Active
-                            lastAudit: row.LastAudit || ""  // Date string (YYYY-MM-DD)
+                            status: row.Status || "Active",
+                            lastAudit: row.LastAudit || "",
+                            // [NEW] Read Color from Excel (e.g., "#FF0000" or "red")
+                            color: row.Color || null 
                         });
                     }
                 });

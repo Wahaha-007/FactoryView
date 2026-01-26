@@ -38,7 +38,9 @@ export class DataExporter {
                     Y: item.y,
                     Description: item.desc || "",
                     Status: item.status || "Active",
-                    LastAudit: item.lastAudit || ""
+                    LastAudit: item.lastAudit || "",
+                        // [ADD THIS LINE] Save the color back to the Excel file
+                    Color: item.color || "" 
                 }));
 
                 const ws = XLSX.utils.json_to_sheet(excelRows);

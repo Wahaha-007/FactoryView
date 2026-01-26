@@ -102,7 +102,6 @@ export class FloorManager {
         });
     }
 
-
     /* --- NAVIGATION / ISOLATION --- */
     toggleFloorIsolation(index) {
         if (this.activeFloorIndex === index) {

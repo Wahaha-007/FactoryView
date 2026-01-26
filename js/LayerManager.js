@@ -91,7 +91,14 @@ export class LayerManager {
 
         // 1. Delegate Creation to Factory
         const modelId = this.typeToModelMap[item.type] || 'cone';
-        const visual = this.factory.createVisual(item, modelId, layer.color);
+
+        // [NEW] Determine Color: Use item's specific color if available, else use layer color
+        let objectColor = layer.color;
+        if (item.color) {
+            // Create a new THREE.Color from the hex string or name in Excel
+            objectColor = new THREE.Color(item.color);
+        }
+        const visual = this.factory.createVisual(item, modelId, objectColor);
 
         // 2. Position
         // Base elevation logic (extracted from original)

@@ -1,8 +1,11 @@
-Directory Structure for: AssetManage/
+Directory Structure for: 5.FactoryView/
 ==================================================
     index.html
     [assets/]
-        Floor1 - Copy.png
+        1st Floor-B.png
+        2nd Floor.png
+        3rd Floor-B.png
+        4th Floor-B.png
         Floor1.png
         floor_1_data.xlsx
         floor_2_data.xlsx
@@ -17,6 +20,7 @@ Directory Structure for: AssetManage/
         DataLoader.js
         EditorManager.js
         FloorManager.js
+        FloorManager_Old.js
         InputManager.js
         LayerManager.js
         SceneManager.js
