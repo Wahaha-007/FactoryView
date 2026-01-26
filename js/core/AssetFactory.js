@@ -53,7 +53,7 @@ export class AssetFactory {
     }
 
     /* --- 2. ASSET CREATION --- */
-    createVisual(item, modelId, color) {
+    createVisual(item, modelId, color, layerIcon) {
         let mesh;
 
         // A. Custom Model (GLB)
@@ -84,7 +84,7 @@ export class AssetFactory {
         mesh.userData = item;
 
         // C. Create Label
-        const label = this.createLabel(item);
+        const label = this.createLabel(item, layerIcon);
 
         // Label Height Logic
         const labelHeight = (modelId === 'cone') ? 10 : 60;
@@ -140,6 +140,11 @@ export class AssetFactory {
             case 'desktop':
                 geometry = new THREE.BoxGeometry(15, 40, 35);
                 geometry.translate(0, 20, 0); break;
+
+            case 'paper':
+                geometry = new THREE.BoxGeometry(15, 40, 5);
+                geometry.translate(0, 20, 0); break;
+
             case 'monitor':
                 const groupMon = new THREE.Group();
                 const stand = new THREE.Mesh(new THREE.CylinderGeometry(2, 4, 15), material);
@@ -188,17 +193,42 @@ export class AssetFactory {
         return new THREE.Mesh(geometry, material);
     }
 
+    
     // Update the signature to accept the full item
-    createLabel(item) {
+    createLabel(item, layerIcon) {
+        
+        const ICON_MAP = {
+            'house': '🏠',  // You can use emojis for simplicity
+            'server': '🖥️',
+            'wifi': '📡',
+            'warning': '⚠️',
+            'camera': '📷',
+            'note': '📝',      
+            'operator': '👷',  
+            'scale': '⚖️',     
+            'scanner': '🔫' ,
+            'clock': '🕒'   
+        };
+
         const div = document.createElement('div');
         div.className = 'label';
 
-        // Status Dot
-        const dot = document.createElement('span');
-        const statusClass = (item.status === 'Inactive') ? 'status-inactive' : 'status-active';
-        dot.className = `status-dot ${statusClass}`;
-        div.appendChild(dot);
-
+        // 1. Check if Layer has a specific Icon config
+        if (layerIcon && ICON_MAP[layerIcon]) {
+            const iconSpan = document.createElement('span');
+            iconSpan.textContent = ICON_MAP[layerIcon];
+            iconSpan.style.marginRight = '5px';
+            iconSpan.style.fontSize = '1.2em';
+            div.appendChild(iconSpan);
+        } 
+        // 2. Fallback to the old "Dot" logic if no icon is configured
+        else {
+            // Status Dot
+            const dot = document.createElement('span');
+            const statusClass = (item.status === 'Inactive') ? 'status-inactive' : 'status-active';
+            dot.className = `status-dot ${statusClass}`;
+            div.appendChild(dot);
+        }
         // Text
         div.appendChild(document.createTextNode(item.name));
 

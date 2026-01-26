@@ -21,7 +21,7 @@ export class LayerManager {
     initFromConfig(configLayers, configTypes) {
         configLayers.forEach(cfg => {
             const isVisible = (cfg.id === 'loc_name');
-            this.createLayer(cfg.id, cfg.name, cfg.color, isVisible);
+            this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon);
             this.layerToTypesMap[cfg.id] = [];
         });
 
@@ -39,7 +39,7 @@ export class LayerManager {
         await this.factory.preloadModels(this.typeToModelMap);
     }
 
-    createLayer(id, name, colorHex, initialVisible = true) {
+    createLayer(id, name, colorHex, initialVisible = true, icon = null) {
         const group = new THREE.Group();
         group.name = name;
         group.visible = initialVisible;
@@ -50,7 +50,8 @@ export class LayerManager {
             group,
             visible: initialVisible,
             color: new THREE.Color(colorHex || '#00d2ff'),
-            items: []
+            items: [],
+            icon: icon
         };
         return this.layers[id];
     }
@@ -98,7 +99,7 @@ export class LayerManager {
             // Create a new THREE.Color from the hex string or name in Excel
             objectColor = new THREE.Color(item.color);
         }
-        const visual = this.factory.createVisual(item, modelId, objectColor);
+        const visual = this.factory.createVisual(item, modelId, objectColor, layer.icon);
 
         // 2. Position
         // Base elevation logic (extracted from original)
