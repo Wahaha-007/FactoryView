@@ -32,7 +32,7 @@ export class AssetFactory {
                     // Normalize Pivot (Center Bottom)
                     const container = new THREE.Group();
                     container.add(root);
-                    
+
                     box.setFromObject(root); // Update box after scale
                     const center = new THREE.Vector3();
                     box.getCenter(center);
@@ -69,12 +69,12 @@ export class AssetFactory {
                     child.material.transparent = true;
                     // Apply layer color tint if needed (optional)
                     // child.material.color.lerp(color, 0.5); 
-                    
+
                     // Note: If you want to FORCE the layer color on the model, uncomment:
                     // child.material.color.copy(color);
                 }
             });
-        } 
+        }
         // B. Procedural Geometry
         else {
             mesh = this.createProceduralMesh(modelId, color);
@@ -85,11 +85,11 @@ export class AssetFactory {
 
         // C. Create Label
         const label = this.createLabel(item);
-        
+
         // Label Height Logic
         const labelHeight = (modelId === 'cone') ? 10 : 60;
         label.position.set(0, labelHeight, 0);
-        
+
         mesh.add(label);
 
         return mesh;
@@ -98,7 +98,7 @@ export class AssetFactory {
     createProceduralMesh(modelId, color) {
         let geometry;
         // Ensure standard material handles transparency for fading
-        const material = new THREE.MeshStandardMaterial({ 
+        const material = new THREE.MeshStandardMaterial({
             color: color,
             transparent: true // <--- IMPORTANT FOR FADING
         });
@@ -122,19 +122,20 @@ export class AssetFactory {
                 geometry = new THREE.BoxGeometry(30, 70, 30);
                 geometry.translate(0, 35, 0); break;
             case 'switch':
-                geometry = new THREE.BoxGeometry(60, 12, 40);
-                geometry.translate(0, 6, 0); break;
+                //geometry = new THREE.BoxGeometry(60, 12, 40);
+                //# geometry.translate(0, 6, 0); break;
+                geometry = new THREE.SphereGeometry(15, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2); break;
 
             // --- DEVICES ---
             case 'laptop':
                 const groupLap = new THREE.Group();
                 const base = new THREE.Mesh(new THREE.BoxGeometry(30, 2, 20), material);
                 const screen = new THREE.Mesh(new THREE.BoxGeometry(30, 20, 2), material);
-                base.position.y = 1; 
+                base.position.y = 1;
                 screen.position.set(0, 11, -10); screen.rotation.x = 0.2;
                 groupLap.add(base); groupLap.add(screen);
                 return groupLap; // Returns Group, material shared but cloned instance per group call is safer if we clone material above? 
-                // Actually here 'material' is created NEW every time createProceduralMesh is called, so it's safe!
+            // Actually here 'material' is created NEW every time createProceduralMesh is called, so it's safe!
 
             case 'desktop':
                 geometry = new THREE.BoxGeometry(15, 40, 35);
@@ -152,7 +153,7 @@ export class AssetFactory {
                 geometry = new THREE.CylinderGeometry(15, 15, 4, 32);
                 geometry.rotateX(Math.PI / 2); geometry.translate(0, 20, 0); break;
             case 'dome':
-                geometry = new THREE.SphereGeometry(15, 32, 16, 0, Math.PI*2, 0, Math.PI/2); break;
+                geometry = new THREE.SphereGeometry(15, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2); break;
             case 'bullet':
                 geometry = new THREE.CylinderGeometry(8, 8, 30, 16);
                 geometry.rotateX(Math.PI / 2); geometry.translate(0, 15, 0); break;
@@ -188,10 +189,10 @@ export class AssetFactory {
     }
 
     // Update the signature to accept the full item
-    createLabel(item) { 
+    createLabel(item) {
         const div = document.createElement('div');
         div.className = 'label';
-        
+
         // Status Dot
         const dot = document.createElement('span');
         const statusClass = (item.status === 'Inactive') ? 'status-inactive' : 'status-active';
