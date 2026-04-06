@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factory Digital Twin — Login</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #1a1a1a;
+      --panel:    #242424;
+      --border:   #383838;
+      --text:     #eeeeee;
+      --muted:    #888888;
+      --accent:   #00d2ff;
+      --accent-h: #00a8cc;
+      --danger:   #ff4d4d;
+      --radius:   6px;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* === Grid Background === */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,210,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,210,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Logo / Icon */
+    .logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(0, 210, 255, 0.1);
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-icon svg { color: var(--accent); }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+      letter-spacing: 0.3px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.1);
+    }
+    input::placeholder { color: #555; }
+
+    .btn {
+      width: 100%;
+      padding: 11px;
+      margin-top: 8px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+    .btn:hover  { background: var(--accent-h); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled {
+      background: #444;
+      color: #888;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Spinner inside button */
+    .btn .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      display: none;
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: rgba(255, 77, 77, 0.12);
+      border: 1px solid rgba(255, 77, 77, 0.35);
+      border-radius: var(--radius);
+      color: #ff9090;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    .error-msg.visible { display: block; }
+
+    .footer-note {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <!-- Icon -->
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/>
+          <line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>
+      </div>
+    </div>
+
+    <h1>Factory Digital Twin</h1>
+    <p class="subtitle">Sign in to access the 3D viewer</p>
+
+    <form id="login-form" autocomplete="on" novalidate>
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          autocomplete="username"
+          placeholder="Enter username"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          autocomplete="current-password"
+          placeholder="Enter password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn" id="submit-btn">Sign In</button>
+
+      <div class="error-msg" id="error-msg" role="alert"></div>
+    </form>
+
+    <p class="footer-note">Factory Digital Twin v1.0</p>
+  </div>
+
+  <script>
+    const form     = document.getElementById('login-form');
+    const btn      = document.getElementById('submit-btn');
+    const errorMsg = document.getElementById('error-msg');
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.add('visible');
+    }
+    function hideError() {
+      errorMsg.classList.remove('visible');
+    }
+    function setLoading(loading) {
+      btn.disabled = loading;
+      btn.innerHTML = loading
+        ? '<span class="spinner"></span>Signing in…'
+        : 'Sign In';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!username || !password) {
+        showError('Please enter both username and password.');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+          credentials: 'same-origin'
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.success) {
+          // Redirect to app (or ?redirect= param if set)
+          const params = new URLSearchParams(window.location.search);
+          window.location.href = params.get('redirect') || '/';
+        } else {
+          showError(data.error || 'Login failed. Please try again.');
+          setLoading(false);
+        }
+      } catch (err) {
+        showError('Network error. Please check your connection.');
+        setLoading(false);
+      }
+    });
+
+    // Allow Enter key in username field to jump to password
+    document.getElementById('username').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('password').focus();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -41,6 +41,29 @@
         <button id="btn-edit-mode">Enter Edit Mode</button>
         <button id="btn-export" style="display:none; background:#28a745;">Save & Export XLSX</button>
     </div>
+    
+    <!-- Logout Button (top-right, outside panels) -->
+    <a href="/api/logout"
+    id="btn-logout"
+    title="Logout"
+    style="
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 200;
+        background: #2a2a2a;
+        color: #aaa;
+        border: 1px solid #444;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        font-family: 'Segoe UI', sans-serif;
+        transition: background 0.2s, color 0.2s;
+    "
+    onmouseover="this.style.background='#3a3a3a';this.style.color='#fff'"
+    onmouseout="this.style.background='#2a2a2a';this.style.color='#aaa'"
+    >⏻ Logout</a>
 
     <!-- CENTER: 3D Canvas -->
     <div id="canvas-container"></div>

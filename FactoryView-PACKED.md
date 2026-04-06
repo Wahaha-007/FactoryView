@@ -1,7 +1,162 @@
-============================================================
-/* === FILE: index.html === */
-============================================================
+# Project Structure
 
+```
+    compack.py
+    index.html
+    [assets/]
+        1st Floor-B.png
+        2nd Floor.png
+        3rd Floor-B.png
+        4th Floor-B.png
+        Floor1.png
+        floor_1_data.xlsx
+        floor_2_data.xlsx
+        floor_3_data.xlsx
+        floor_4_data.xlsx
+        system_config.xlsx
+    [css/]
+        style.css
+    [js/]
+        Application.js
+        CameraManager.js
+        DataLoader.js
+        EditorManager.js
+        FloorManager.js
+        FloorManager_Old.js
+        InputManager.js
+        LayerManager.js
+        SceneManager.js
+        UIManager.js
+        main.js
+        [core/]
+            AssetFactory.js
+            Materials.js
+        [editor/]
+            AddItemModal.js
+            ContextMenu.js
+            DataExporter.js
+            DragController.js
+        [ui/]
+            ElevatorPanel.js
+            LayerPanel.js
+            PropertiesPanel.js
+```
+
+---
+
+# File Contents
+
+## compack.py
+
+```python
+import os
+
+
+# =========================
+# Configuration
+# =========================
+ROOT_DIR = os.getcwd()
+OUTPUT_FILE = "FactoryView-PACKED.md"   # ← .md preserves code fences on upload
+
+
+CODE_EXTENSIONS = {'.py', '.css', '.html', '.ts', '.tsx', '.js', '.mjs', '.md', '.yaml'}
+EXCLUDE_DIRS = {'.git', '__pycache__', '.vscode', '.idea', 'node_modules', 'venv311', '.next'}
+
+
+# Extension → markdown language tag for syntax highlighting
+LANG_MAP = {
+    '.py':   'python',
+    '.css':  'css',
+    '.html': 'html',
+    '.ts':   'typescript',
+    '.tsx':  'tsx',
+    '.js':   'javascript',
+    '.mjs':  'javascript',
+    '.md':   'markdown',
+}
+
+
+# =========================
+# Write Project Structure
+# =========================
+def write_structure(outfile):
+    outfile.write("# Project Structure\n\n")
+    outfile.write("```\n")
+
+    for root, dirs, files in os.walk(ROOT_DIR):
+        dirs[:] = sorted([d for d in dirs if d not in EXCLUDE_DIRS])
+
+        level = root.replace(ROOT_DIR, "").count(os.sep)
+        indent = "    " * level
+
+        if root != ROOT_DIR:
+            outfile.write(f"{indent}[{os.path.basename(root)}/]\n")
+
+        sub_indent = "    " * (level + 1)
+        for f in sorted(files):
+            if f == OUTPUT_FILE:
+                continue
+            outfile.write(f"{sub_indent}{f}\n")
+
+    outfile.write("```\n\n")
+    outfile.write("---\n\n")
+
+
+# =========================
+# Write File Contents
+# =========================
+def write_files(outfile):
+    outfile.write("# File Contents\n\n")
+
+    for root, dirs, files in os.walk(ROOT_DIR):
+        dirs[:] = sorted([d for d in dirs if d not in EXCLUDE_DIRS])
+
+        for file in sorted(files):
+            ext = os.path.splitext(file)[1].lower()
+
+            if ext in CODE_EXTENSIONS and file != OUTPUT_FILE:
+                path = os.path.join(root, file)
+                rel  = os.path.relpath(path, ROOT_DIR).replace(os.sep, "/")
+                lang = LANG_MAP.get(ext, "")
+
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        content = f.read()
+
+                    # ── Markdown code fence preserves underscores on upload ──
+                    outfile.write(f"## {rel}\n\n")
+                    outfile.write(f"```{lang}\n")
+                    outfile.write(content)
+                    if not content.endswith("\n"):
+                        outfile.write("\n")
+                    outfile.write("```\n\n")
+
+                    print(f"Packed: {rel}")
+
+                except Exception as e:
+                    print(f"Failed to read {rel}: {e}")
+
+
+# =========================
+# Main
+# =========================
+def main():
+    print(f"Scanning project: {ROOT_DIR}")
+
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as outfile:
+        write_structure(outfile)
+        write_files(outfile)
+
+    print(f"\nAll done! Output: {OUTPUT_FILE}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## index.html
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -102,12 +257,11 @@
 
 </body>
 </html>
+```
 
+## css/style.css
 
-============================================================
-/* === FILE: css/style.css === */
-============================================================
-
+```css
 /* =========================================
    1. VARIABLES & THEME
    ========================================= */
@@ -352,12 +506,11 @@ button:hover { background: #555; }
 .audit-ok {
     color: #88ff88; font-size: 0.8rem; margin-top: 5px;
 }
+```
 
+## js/Application.js
 
-============================================================
-/* === FILE: js/Application.js === */
-============================================================
-
+```javascript
 /* js/Application.js */
 import TWEEN from 'three/addons/libs/tween.module.js'; // Ensure this is imported!
 import { SceneManager } from './SceneManager.js';
@@ -503,12 +656,11 @@ export class Application {
         this.sceneManager.update(); // Handles renderer.render()
     }
 }
+```
 
+## js/CameraManager.js
 
-============================================================
-/* === FILE: js/CameraManager.js === */
-============================================================
-
+```javascript
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import TWEEN from 'three/addons/libs/tween.module.js';
@@ -782,12 +934,11 @@ export class CameraManager {
     }
 
 }
+```
 
+## js/DataLoader.js
 
-============================================================
-/* === FILE: js/DataLoader.js === */
-============================================================
-
+```javascript
 /* js/DataLoader.js */
 
 export class DataLoader {
@@ -829,8 +980,10 @@ export class DataLoader {
                             x: row.X,
                             y: row.Y,
                             desc: row.Description,
-                            status: row.Status || "Active", // Default to Active
-                            lastAudit: row.LastAudit || ""  // Date string (YYYY-MM-DD)
+                            status: row.Status || "Active",
+                            lastAudit: row.LastAudit || "",
+                            // [NEW] Read Color from Excel (e.g., "#FF0000" or "red")
+                            color: row.Color || null 
                         });
                     }
                 });
@@ -862,12 +1015,11 @@ export class DataLoader {
         return XLSX.read(arrayBuffer, { type: 'array', cellDates: true }); 
     }
 }
+```
 
+## js/EditorManager.js
 
-============================================================
-/* === FILE: js/EditorManager.js === */
-============================================================
-
+```javascript
 /* js/editor/EditorManager.js */
 import { DragController } from './editor/DragController.js';
 import { ContextMenu } from './editor/ContextMenu.js';
@@ -1004,12 +1156,11 @@ export class EditorManager {
     }
 
 }
+```
 
+## js/FloorManager.js
 
-============================================================
-/* === FILE: js/FloorManager.js === */
-============================================================
-
+```javascript
 /* js/FloorManager.js */
 import * as THREE from 'three';
 import { Materials } from './core/Materials.js';
@@ -1204,12 +1355,11 @@ export class FloorManager {
         });
     }
 }
+```
 
+## js/FloorManager_Old.js
 
-============================================================
-/* === FILE: js/FloorManager_Old.js === */
-============================================================
-
+```javascript
 /* js/FloorManager.js */
 import * as THREE from 'three';
 import { Materials } from './core/Materials.js';
@@ -1384,12 +1534,11 @@ export class FloorManager {
         });
     }
 }
+```
 
+## js/InputManager.js
 
-============================================================
-/* === FILE: js/InputManager.js === */
-============================================================
-
+```javascript
 import * as THREE from 'three';
 
 export class InputManager extends EventTarget {
@@ -1467,12 +1616,11 @@ export class InputManager extends EventTarget {
         }
     }
 }
+```
 
+## js/LayerManager.js
 
-============================================================
-/* === FILE: js/LayerManager.js === */
-============================================================
-
+```javascript
 /* js/LayerManager.js */
 import * as THREE from 'three';
 import TWEEN from 'three/addons/libs/tween.module.js';
@@ -1496,7 +1644,7 @@ export class LayerManager {
     initFromConfig(configLayers, configTypes) {
         configLayers.forEach(cfg => {
             const isVisible = (cfg.id === 'loc_name');
-            this.createLayer(cfg.id, cfg.name, cfg.color, isVisible);
+            this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon);
             this.layerToTypesMap[cfg.id] = [];
         });
 
@@ -1514,7 +1662,7 @@ export class LayerManager {
         await this.factory.preloadModels(this.typeToModelMap);
     }
 
-    createLayer(id, name, colorHex, initialVisible = true) {
+    createLayer(id, name, colorHex, initialVisible = true, icon = null) {
         const group = new THREE.Group();
         group.name = name;
         group.visible = initialVisible;
@@ -1525,7 +1673,8 @@ export class LayerManager {
             group,
             visible: initialVisible,
             color: new THREE.Color(colorHex || '#00d2ff'),
-            items: []
+            items: [],
+            icon: icon
         };
         return this.layers[id];
     }
@@ -1566,7 +1715,14 @@ export class LayerManager {
 
         // 1. Delegate Creation to Factory
         const modelId = this.typeToModelMap[item.type] || 'cone';
-        const visual = this.factory.createVisual(item, modelId, layer.color);
+
+        // [NEW] Determine Color: Use item's specific color if available, else use layer color
+        let objectColor = layer.color;
+        if (item.color) {
+            // Create a new THREE.Color from the hex string or name in Excel
+            objectColor = new THREE.Color(item.color);
+        }
+        const visual = this.factory.createVisual(item, modelId, objectColor, layer.icon);
 
         // 2. Position
         // Base elevation logic (extracted from original)
@@ -1833,12 +1989,11 @@ export class LayerManager {
         }
     }
 }
+```
 
+## js/SceneManager.js
 
-============================================================
-/* === FILE: js/SceneManager.js === */
-============================================================
-
+```javascript
 import * as THREE from 'three';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 
@@ -1915,12 +2070,11 @@ export class SceneManager {
         this.labelRenderer.render(this.scene, this.camera);
     }
 }
+```
 
+## js/UIManager.js
 
-============================================================
-/* === FILE: js/UIManager.js === */
-============================================================
-
+```javascript
 /* js/UIManager.js */
 
 // Imports assume you are using native modules (ES6)
@@ -2007,12 +2161,11 @@ export class UIManager {
         document.body.appendChild(btn);
     }
 }
+```
 
+## js/main.js
 
-============================================================
-/* === FILE: js/main.js === */
-============================================================
-
+```javascript
 /* js/main.js */
 import { Application } from './Application.js';
 
@@ -2022,11 +2175,11 @@ app.init();
 
 // Optional: Expose app to window for debugging in console
 window.app = app;
+```
 
-============================================================
-/* === FILE: js/core/AssetFactory.js === */
-============================================================
+## js/core/AssetFactory.js
 
+```javascript
 /* js/core/AssetFactory.js */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -2082,7 +2235,7 @@ export class AssetFactory {
     }
 
     /* --- 2. ASSET CREATION --- */
-    createVisual(item, modelId, color) {
+    createVisual(item, modelId, color, layerIcon) {
         let mesh;
 
         // A. Custom Model (GLB)
@@ -2113,7 +2266,7 @@ export class AssetFactory {
         mesh.userData = item;
 
         // C. Create Label
-        const label = this.createLabel(item);
+        const label = this.createLabel(item, layerIcon);
 
         // Label Height Logic
         const labelHeight = (modelId === 'cone') ? 10 : 60;
@@ -2169,6 +2322,11 @@ export class AssetFactory {
             case 'desktop':
                 geometry = new THREE.BoxGeometry(15, 40, 35);
                 geometry.translate(0, 20, 0); break;
+
+            case 'paper':
+                geometry = new THREE.BoxGeometry(15, 40, 5);
+                geometry.translate(0, 20, 0); break;
+
             case 'monitor':
                 const groupMon = new THREE.Group();
                 const stand = new THREE.Mesh(new THREE.CylinderGeometry(2, 4, 15), material);
@@ -2217,17 +2375,42 @@ export class AssetFactory {
         return new THREE.Mesh(geometry, material);
     }
 
+    
     // Update the signature to accept the full item
-    createLabel(item) {
+    createLabel(item, layerIcon) {
+        
+        const ICON_MAP = {
+            'house': '🏠',  // You can use emojis for simplicity
+            'server': '🖥️',
+            'wifi': '📡',
+            'warning': '⚠️',
+            'camera': '📷',
+            'note': '📝',      
+            'operator': '👷',  
+            'scale': '⚖️',     
+            'scanner': '🔫' ,
+            'clock': '🕒'   
+        };
+
         const div = document.createElement('div');
         div.className = 'label';
 
-        // Status Dot
-        const dot = document.createElement('span');
-        const statusClass = (item.status === 'Inactive') ? 'status-inactive' : 'status-active';
-        dot.className = `status-dot ${statusClass}`;
-        div.appendChild(dot);
-
+        // 1. Check if Layer has a specific Icon config
+        if (layerIcon && ICON_MAP[layerIcon]) {
+            const iconSpan = document.createElement('span');
+            iconSpan.textContent = ICON_MAP[layerIcon];
+            iconSpan.style.marginRight = '5px';
+            iconSpan.style.fontSize = '1.2em';
+            div.appendChild(iconSpan);
+        } 
+        // 2. Fallback to the old "Dot" logic if no icon is configured
+        else {
+            // Status Dot
+            const dot = document.createElement('span');
+            const statusClass = (item.status === 'Inactive') ? 'status-inactive' : 'status-active';
+            dot.className = `status-dot ${statusClass}`;
+            div.appendChild(dot);
+        }
         // Text
         div.appendChild(document.createTextNode(item.name));
 
@@ -2241,12 +2424,11 @@ export class AssetFactory {
         return new CSS2DObject(div);
     }
 }
+```
 
+## js/core/Materials.js
 
-============================================================
-/* === FILE: js/core/Materials.js === */
-============================================================
-
+```javascript
 /* js/core/Materials.js */
 import * as THREE from 'three';
 
@@ -2299,12 +2481,11 @@ export const Materials = {
         });
     }
 };
+```
 
+## js/editor/AddItemModal.js
 
-============================================================
-/* === FILE: js/editor/AddItemModal.js === */
-============================================================
-
+```javascript
 /* js/editor/AddItemModal.js */
 
 export class AddItemModal {
@@ -2432,12 +2613,11 @@ export class AddItemModal {
         this.tempPos = null;
     }
 }
+```
 
+## js/editor/ContextMenu.js
 
-============================================================
-/* === FILE: js/editor/ContextMenu.js === */
-============================================================
-
+```javascript
 /* js/editor/ContextMenu.js */
 import * as THREE from 'three';
 
@@ -2508,12 +2688,11 @@ export class ContextMenu {
         this.selectedItem = null;
     }
 }
+```
 
+## js/editor/DataExporter.js
 
-============================================================
-/* === FILE: js/editor/DataExporter.js === */
-============================================================
-
+```javascript
 /* js/editor/DataExporter.js */
 
 export class DataExporter {
@@ -2554,7 +2733,9 @@ export class DataExporter {
                     Y: item.y,
                     Description: item.desc || "",
                     Status: item.status || "Active",
-                    LastAudit: item.lastAudit || ""
+                    LastAudit: item.lastAudit || "",
+                        // [ADD THIS LINE] Save the color back to the Excel file
+                    Color: item.color || "" 
                 }));
 
                 const ws = XLSX.utils.json_to_sheet(excelRows);
@@ -2570,12 +2751,11 @@ export class DataExporter {
         XLSX.writeFile(wb, `${floorId}_data_${dateStr}.xlsx`);
     }
 }
+```
 
+## js/editor/DragController.js
 
-============================================================
-/* === FILE: js/editor/DragController.js === */
-============================================================
-
+```javascript
 /* js/editor/DragController.js */
 import * as THREE from 'three';
 
@@ -2707,12 +2887,11 @@ export class DragController {
         }
     }
 }
+```
 
+## js/ui/ElevatorPanel.js
 
-============================================================
-/* === FILE: js/ui/ElevatorPanel.js === */
-============================================================
-
+```javascript
 /* js/ui/ElevatorPanel.js */
 
 export class ElevatorPanel {
@@ -2816,12 +2995,11 @@ export class ElevatorPanel {
         });
     }
 }
+```
 
+## js/ui/LayerPanel.js
 
-============================================================
-/* === FILE: js/ui/LayerPanel.js === */
-============================================================
-
+```javascript
 /* js/ui/LayerPanel.js */
 
 export class LayerPanel {
@@ -2908,12 +3086,11 @@ export class LayerPanel {
         });
     }
 }
+```
 
+## js/ui/PropertiesPanel.js
 
-============================================================
-/* === FILE: js/ui/PropertiesPanel.js === */
-============================================================
-
+```javascript
 /* js/ui/PropertiesPanel.js */
 
 export class PropertiesPanel {
@@ -3111,5 +3288,5 @@ export class PropertiesPanel {
         }
     }
 }
-
+```
 
