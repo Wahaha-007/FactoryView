@@ -12,6 +12,7 @@
     --danger-color: #ff4444;
     --success-color: #44ff44;
     --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --left-panel-width: 250px;   /* ← single source of truth for panel width */
 }
 
 body.blueprint-mode {
@@ -38,21 +39,58 @@ body {
     height: 100vh;
 }
 
-/* Layout Columns */
 #panel-left {
-    width: 250px;
+    width: var(--left-panel-width);
     background: var(--panel-bg);
     border-right: 1px solid var(--border-color);
     padding: 15px;
     display: flex;
     flex-direction: column;
     z-index: 10;
+    overflow: hidden;                          /* ← needed for smooth collapse */
+    transition: width 0.3s ease,
+                padding 0.3s ease;             /* ← smooth slide */
+}
+
+/* Collapsed state — toggled by JS */
+#panel-left.collapsed {
+    width: 0;
+    padding: 0;
+    border-right: none;
+}
+
+/* Toggle Tab Button */
+#btn-toggle-left {
+    position: fixed;
+    left: var(--left-panel-width);             /* starts at right edge of panel */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 52px;
+    padding: 0;
+    background: #3a3a3a;
+    color: #aaa;
+    border: 1px solid #555;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    font-size: 9px;
+    cursor: pointer;
+    z-index: 50;
+    transition: left 0.3s ease,
+                background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#btn-toggle-left:hover {
+    background: #555;
+    color: #fff;
 }
 
 #canvas-container {
     flex-grow: 1;
     position: relative;
-    background: #fff; /* Canvas itself usually covers this */
+    background: #fff;
     overflow: hidden;
 }
 
@@ -66,14 +104,14 @@ body {
 }
 
 #panel-right-top {
-    height: 60%;
+    height: 55%;
     padding: 15px;
     overflow-y: auto;
     border-bottom: 1px solid var(--border-color);
 }
 
 #panel-right-bottom {
-    height: 40%;
+    height: 45%;
     padding: 15px;
     background: var(--panel-item-bg);
     overflow-y: auto;
@@ -118,7 +156,6 @@ button {
 
 button:hover { background: #555; }
 
-/* Specific Toggle Button (Theme) */
 #btn-theme {
     position: absolute;
     top: 10px;
@@ -134,7 +171,6 @@ button:hover { background: #555; }
 /* =========================================
    5. COMPONENTS: LISTS & ITEMS
    ========================================= */
-/* Left Panel: Checkboxes */
 .layer-item {
     display: flex;
     align-items: center;
@@ -143,7 +179,6 @@ button:hover { background: #555; }
 }
 .layer-item input { margin-right: 10px; transform: scale(1.2); }
 
-/* Right Panel: Item List */
 #item-list { list-style: none; padding: 0; margin: 0; }
 
 #item-list li {
@@ -160,19 +195,17 @@ button:hover { background: #555; }
 
 .list-item-left { display: flex; align-items: center; gap: 8px; }
 .list-status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.list-status-active { background-color: var(--success-color); box-shadow: 0 0 2px var(--success-color); }
+.list-status-active  { background-color: var(--success-color); box-shadow: 0 0 2px var(--success-color); }
 .list-status-inactive { background-color: var(--danger-color); }
 
 /* =========================================
    6. COMPONENTS: OVERLAYS & 3D UI
    ========================================= */
-/* Loading Screen */
 #loading {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: rgba(0,0,0,0.8); padding: 20px; border-radius: 8px; z-index: 999;
 }
 
-/* 3D Labels (CSS2D) */
 .label {
     color: #FFF;
     font-family: sans-serif;
@@ -187,7 +220,7 @@ button:hover { background: #555; }
     font-size: var(--label-size, 12px);
     margin-top: var(--label-offset, -20px);
     transition: font-size 0.1s, margin-top 0.1s;
-    transition: opacity 1s ease-in-out; 
+    transition: opacity 1s ease-in-out;
 }
 .label:hover {
     background: rgba(0, 0, 0, 0.9);
@@ -195,24 +228,19 @@ button:hover { background: #555; }
     z-index: 999;
 }
 
-/* Status Dots in Labels */
 .status-dot {
     display: inline-block; width: 8px; height: 8px;
     border-radius: 50%; margin-right: 6px;
     border: 1px solid rgba(255,255,255,0.5);
 }
-.status-active { background-color: var(--success-color); box-shadow: 0 0 4px var(--success-color); }
-.status-inactive { background-color: var(--danger-color); box-shadow: 0 0 4px var(--danger-color); }
+.status-active   { background-color: var(--success-color); box-shadow: 0 0 4px var(--success-color); }
+.status-inactive { background-color: var(--danger-color);  box-shadow: 0 0 4px var(--danger-color); }
 
-/* Elevator Panel (Floating) */
-#elevator-panel {
-    /* Styles are injected by JS, but you can move them here if you want fixed CSS */
-}
+#elevator-panel {}
 
 /* =========================================
    7. COMPONENTS: MODALS & DETAILS
    ========================================= */
-/* Edit Modal */
 #edit-modal {
     display: none;
     position: fixed;
@@ -231,7 +259,6 @@ button:hover { background: #555; }
 }
 #edit-modal button#btn-confirm:hover { background: #00bfff; }
 
-/* Details Panel Warnings */
 .audit-warning {
     margin-top: 10px; padding: 10px;
     background: rgba(255, 0, 0, 0.2);
@@ -241,4 +268,45 @@ button:hover { background: #555; }
 }
 .audit-ok {
     color: #88ff88; font-size: 0.8rem; margin-top: 5px;
+}
+
+/* Add to section 2 — inside #panel-left */
+#panel-left {
+    /* ADD these two lines to the existing rule: */
+    overflow: hidden;
+    transition: width 0.3s ease, padding 0.3s ease;
+}
+
+/* NEW: collapsed state */
+#panel-left.collapsed {
+    width: 0;
+    padding: 0;
+    border-right: none;
+}
+
+/* NEW: toggle tab button */
+#btn-toggle-left {
+    position: fixed;
+    left: 250px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 52px;
+    padding: 0;
+    background: #3a3a3a;
+    color: #aaa;
+    border: 1px solid #555;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    font-size: 9px;
+    cursor: pointer;
+    z-index: 50;
+    transition: left 0.3s ease, background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#btn-toggle-left:hover {
+    background: #555;
+    color: #fff;
 }
