@@ -20,7 +20,7 @@ export class LayerManager {
 
     initFromConfig(configLayers, configTypes) {
         configLayers.forEach(cfg => {
-            const isVisible = (cfg.id === 'loc_name');
+            const isVisible = (cfg.id === 'it_dev');
             this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon);
             this.layerToTypesMap[cfg.id] = [];
         });
