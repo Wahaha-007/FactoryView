@@ -259,7 +259,14 @@ export class AssetFactory {
 
         const line = new THREE.Line(geometry, material);
         line.computeLineDistances(); // Required for dashes to render
-        line.userData.flowSpeed = item.speed || 1;
+
+        // Animate: onBeforeRender fires just before Three.js uploads uniforms for this
+        // object, so dashOffset is guaranteed to be current every frame.
+        const startTime = performance.now();
+        const flowSpeed = item.speed || 1;
+        line.onBeforeRender = function(renderer, scene, camera, geo, mat) {
+            mat.dashOffset = -flowSpeed * (performance.now() - startTime) / 1000 * 30;
+        };
 
         group.add(line);
         group.userData = item;

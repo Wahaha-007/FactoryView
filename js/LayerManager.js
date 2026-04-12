@@ -103,13 +103,6 @@ export class LayerManager {
             visual.userData = item;
             visual.userData.floorOffset = heightOffset;
 
-            // Collect material refs for the animation loop (avoids per-frame traversal)
-            visual.traverse(c => {
-                if (c.type === 'Line' && c.material) {
-                    this._flowMaterials.push({ mat: c.material, speed: item.speed || 1 });
-                }
-            });
-
             layer.group.add(visual);
             layer.items.push(item);
             return;
@@ -317,17 +310,9 @@ export class LayerManager {
     }
 
     /* --- FLOW ANIMATION --- */
-    updateFlowAnimations() {
-        if (this._flowMaterials.length === 0) return;
-
-        const now = performance.now();
-        const delta = this._flowLastTime !== null ? (now - this._flowLastTime) / 1000 : 0;
-        this._flowLastTime = now;
-
-        for (const { mat, speed } of this._flowMaterials) {
-            mat.dashOffset -= speed * delta * 30;
-        }
-    }
+    // Animation is driven by line.onBeforeRender in AssetFactory.createFlowVisual.
+    // This stub is kept so Application.js call site doesn't need to change.
+    updateFlowAnimations() {}
 
     /* --- ANIMATED FILTERING --- */
     
