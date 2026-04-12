@@ -43,6 +43,7 @@ export class DragController {
 
     onPointerDown(e) {
         if (!this.editor.isEditMode || e.button !== 0) return; // Left click only
+        if (this.editor.isDrawingFlow) return; // Flow path drawing takes priority
 
         this.raycaster.setFromCamera(this.getMouse(e), this.cameraManager.camera);
 

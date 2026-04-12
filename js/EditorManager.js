@@ -4,6 +4,7 @@ import { DragController } from './editor/DragController.js';
 import { ContextMenu } from './editor/ContextMenu.js';
 import { AddItemModal } from './editor/AddItemModal.js';
 import { DataExporter } from './editor/DataExporter.js';
+import { FlowDrawer } from './editor/FlowDrawer.js';
 
 export class EditorManager {
     constructor(layerManager, inputManager, cameraManager, floorManager) {
@@ -32,6 +33,7 @@ export class EditorManager {
         this.contextMenu = new ContextMenu(this, layerManager, cameraManager);
         this.addItemModal = new AddItemModal(this, layerManager);
         this.exporter = new DataExporter(layerManager);
+        this.flowDrawer = new FlowDrawer(this, layerManager, cameraManager);
     }
 
     /* js/EditorManager.js */
@@ -60,6 +62,29 @@ export class EditorManager {
         this.dragController.init();
         this.contextMenu.init();
         this.addItemModal.init();
+        this.flowDrawer.init();
+
+        // Draw Flow Path button
+        const btnDrawFlow = document.getElementById('btn-draw-flow');
+        if (btnDrawFlow) btnDrawFlow.addEventListener('click', () => this.toggleFlowDrawing());
+
+        // Flow finish modal buttons
+        const btnFlowConfirm = document.getElementById('flow-finish-confirm');
+        if (btnFlowConfirm) {
+            btnFlowConfirm.addEventListener('click', () => {
+                const name  = document.getElementById('flow-inp-name').value;
+                const color = document.getElementById('flow-inp-color').value;
+                const speed = document.getElementById('flow-inp-speed').value;
+                this.flowDrawer.confirmPath(name, color, speed);
+                this._resetDrawFlowButton();
+            });
+        }
+        const btnFlowCancel = document.getElementById('flow-finish-cancel');
+        if (btnFlowCancel) {
+            btnFlowCancel.addEventListener('click', () => {
+                this.flowDrawer.cancelDrawing();
+            });
+        }
 
         // 3. Listen for Floor Isolation
         window.addEventListener('floor-isolated', (e) => {
@@ -145,6 +170,16 @@ export class EditorManager {
             this.coordDisplay.style.display = this.isEditMode ? 'block' : 'none';
         }
 
+        // Draw Flow Path button visibility
+        const btnDrawFlow = document.getElementById('btn-draw-flow');
+        if (btnDrawFlow) {
+            btnDrawFlow.style.display = this.isEditMode ? 'block' : 'none';
+        }
+        if (!this.isEditMode) {
+            // Clean up any in-progress flow drawing when exiting edit mode
+            this.flowDrawer.cancelDrawing();
+        }
+
         // Camera Logic
         if (this.isEditMode) {
             if (this.activeFloorInfo) {
@@ -163,6 +198,27 @@ export class EditorManager {
             this.addItemModal.hide();
             this.contextMenu.hide();
         }
+    }
+
+    get isDrawingFlow() { return this.flowDrawer?.isActive ?? false; }
+
+    toggleFlowDrawing() {
+        const btn       = document.getElementById('btn-draw-flow');
+        const countLbl  = document.getElementById('flow-waypoint-count');
+        if (!this.flowDrawer.isActive) {
+            this.flowDrawer.startDrawing();
+            if (btn) { btn.textContent = 'Finish Path'; btn.style.background = '#28a745'; }
+            if (countLbl) countLbl.style.display = 'block';
+        } else {
+            this.flowDrawer.finishDrawing();
+        }
+    }
+
+    _resetDrawFlowButton() {
+        const btn      = document.getElementById('btn-draw-flow');
+        const countLbl = document.getElementById('flow-waypoint-count');
+        if (btn)      { btn.textContent = 'Draw Flow Path'; btn.style.background = '#e67e00'; }
+        if (countLbl) { countLbl.style.display = 'none'; countLbl.textContent = ''; }
     }
 
     _onCoordMove(e) {

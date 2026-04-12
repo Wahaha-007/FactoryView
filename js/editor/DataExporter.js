@@ -31,10 +31,19 @@ export class DataExporter {
 
             if (items.length > 0) {
                 hasData = true;
-                const isArea = this.layerManager.layers[layerId] &&
-                               this.layerManager.layers[layerId].renderType === 'area';
+                const renderType = this.layerManager.layers[layerId]?.renderType;
 
-                const excelRows = isArea
+                const excelRows = renderType === 'flow'
+                    ? items.map(item => ({
+                        Name:     item.name,
+                        Points:   item.points    || '',
+                        Color:    item.color     || '#FF6600',
+                        Speed:    item.speed    != null ? item.speed    : 1,
+                        DashSize: item.dashSize != null ? item.dashSize : 30,
+                        GapSize:  item.gapSize  != null ? item.gapSize  : 15,
+                        Tension:  item.tension  != null ? item.tension  : 0.5
+                    }))
+                    : renderType === 'area'
                     ? items.map(item => ({
                         Name:            item.name,
                         X:               item.x,
@@ -48,14 +57,14 @@ export class DataExporter {
                         Description:     item.desc            || ""
                     }))
                     : items.map(item => ({
-                        Name:      item.name,
-                        Type:      item.type,
-                        X:         item.x,
-                        Y:         item.y,
-                        Description: item.desc      || "",
-                        Status:    item.status       || "Active",
-                        LastAudit: item.lastAudit    || "",
-                        Color:     item.color        || ""
+                        Name:        item.name,
+                        Type:        item.type,
+                        X:           item.x,
+                        Y:           item.y,
+                        Description: item.desc   || "",
+                        Status:      item.status  || "Active",
+                        LastAudit:   item.lastAudit || "",
+                        Color:       item.color   || ""
                     }));
 
                 const ws = XLSX.utils.json_to_sheet(excelRows);

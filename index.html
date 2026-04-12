@@ -40,6 +40,8 @@
         <h3>Editor</h3>
         <button id="btn-edit-mode">Enter Edit Mode</button>
         <button id="btn-export" style="display:none; background:#28a745;">Save & Export XLSX</button>
+        <button id="btn-draw-flow" style="display:none; background:#e67e00;">Draw Flow Path</button>
+        <div id="flow-waypoint-count" style="display:none; color:#aaa; font-size:0.78rem; margin:4px 0 0 4px;"></div>
     </div>
     
     <!-- Logout Button (top-right, outside panels) -->
@@ -129,6 +131,21 @@
         <div style="margin-top: 15px; text-align: right;">
             <button id="btn-cancel" style="width: auto; background: #666;">Cancel</button>
             <button id="btn-confirm" style="width: auto; background: #00d2ff;">Confirm</button>
+        </div>
+    </div>
+
+    <!-- Flow Path Finish Modal -->
+    <div id="flow-finish-modal" style="display:none; position:fixed; z-index:2000; background:#2a2a2a; border:1px solid #555; padding:18px; border-radius:6px; min-width:230px; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 4px 20px rgba(0,0,0,0.6);">
+        <h3 style="margin:0 0 12px; color:#eee; font-size:1rem;">Save Flow Path</h3>
+        <label>Name:</label>
+        <input type="text" id="flow-inp-name" autocomplete="off" placeholder="e.g. Stack→Tipping#1">
+        <label>Color:</label>
+        <input type="color" id="flow-inp-color" value="#FF6600">
+        <label>Speed (1 = normal):</label>
+        <input type="number" id="flow-inp-speed" value="1" step="0.1" min="0.1">
+        <div style="margin-top:14px; text-align:right;">
+            <button id="flow-finish-cancel" style="width:auto; background:#666;">Cancel</button>
+            <button id="flow-finish-confirm" style="width:auto; background:#00d2ff;">Add Path</button>
         </div>
     </div>
 
