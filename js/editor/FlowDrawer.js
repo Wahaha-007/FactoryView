@@ -48,7 +48,7 @@ export class FlowDrawer {
         if (this.modal) this.modal.style.display = 'block';
     }
 
-    confirmPath(name, color, speed) {
+    confirmPath(name, color, speed, shape) {
         if (!name.trim()) { alert('Please enter a path name.'); return; }
 
         const points = this.waypoints
@@ -62,14 +62,15 @@ export class FlowDrawer {
         const item = {
             layerId:  'flow',
             name:     name.trim(),
-            x:        0,
-            y:        0,
+            x:        Math.round(this.waypoints[0].x),
+            y:        Math.round(this.waypoints[0].z),
             points,
             color,
             speed:    parseFloat(speed) || 1,
             dashSize: 30,
             gapSize:  15,
             tension:  0.5,
+            shape:    shape || null,
             floorId:  floor.id,
             desc:     'Added via Editor'
         };

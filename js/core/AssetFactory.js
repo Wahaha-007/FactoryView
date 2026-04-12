@@ -232,10 +232,14 @@ export class AssetFactory {
     createFlowVisual(item, color) {
         const group = new THREE.Group();
 
-        // Parse "x1,z1;x2,z2;..." into Vector3 array (y=0, floor height applied by group)
+        // Parse points string into Vector3 array.
+        // Format: "x,z" (2-part, y=0, floor height added by group position)
+        //      or "x,z,y" (3-part, y is absolute world offset — used for cross-floor paths)
         const rawPoints = (item.points || '').split(';').map(pair => {
             const parts = pair.trim().split(',').map(Number);
-            return new THREE.Vector3(parts[0], 0, parts[1]);
+            const px = parts[0], pz = parts[1];
+            const py = parts.length >= 3 ? parts[2] : 0;
+            return new THREE.Vector3(px, py, pz);
         }).filter(p => !isNaN(p.x) && !isNaN(p.z));
 
         if (rawPoints.length < 2) return group;
@@ -260,16 +264,17 @@ export class AssetFactory {
         line.computeLineDistances();
         group.add(line);
 
-        // Animated pulse dots — 3 small spheres that travel along the curve.
+        // Animated pulse objects — count scales with curve length so density is uniform.
         // Positions are updated each frame in LayerManager.updateFlowAnimations()
         // BEFORE renderer.render(), so Three.js always picks up the new positions.
-        const pulseGeo = new THREE.SphereGeometry(8, 8, 6);
+        const pulseGeo = this._createPulseGeometry(item.shape);
         const pulseMat = new THREE.MeshBasicMaterial({ color: color });
+        const pulseCount = Math.max(1, Math.round(curve.getLength() / 250));
         const pulses = [];
-        for (let i = 0; i < 3; i++) {
+        const startPos = rawPoints[0];
+        for (let i = 0; i < pulseCount; i++) {
             const pulse = new THREE.Mesh(pulseGeo, pulseMat);
-            const startPos = rawPoints[0];
-            pulse.position.set(startPos.x, 6, startPos.z);
+            pulse.position.set(startPos.x, startPos.y + 6, startPos.z);
             group.add(pulse);
             pulses.push(pulse);
         }
@@ -282,6 +287,21 @@ export class AssetFactory {
 
         group.userData = item;
         return group;
+    }
+
+    _createPulseGeometry(shape) {
+        switch (shape) {
+            case 'box':       return new THREE.BoxGeometry(16, 12, 20);
+            case 'small_box': return new THREE.BoxGeometry(10, 8, 12);
+            case 'can':       return new THREE.CylinderGeometry(5, 5, 14, 12);
+            case 'sack': {
+                const g = new THREE.CapsuleGeometry(5, 12, 4, 8);
+                g.rotateZ(Math.PI / 2);
+                return g;
+            }
+            case 'powder':    return new THREE.SphereGeometry(5, 6, 4);
+            default:          return new THREE.SphereGeometry(8, 8, 6);
+        }
     }
 
     createAreaLabel(item) {

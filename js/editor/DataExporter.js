@@ -25,9 +25,8 @@ export class DataExporter {
         Object.keys(this.layerManager.layers).forEach(layerId => {
             const layer = this.layerManager.layers[layerId];
             
-            // --- FIX: FILTER BY FLOOR ID ---
-            // Only get items that belong to the current floor
-            const items = layer.items.filter(item => item.floorId === floorId);
+            // Only get items that belong to the current floor, plus global (cross-floor) items
+            const items = layer.items.filter(item => item.floorId === floorId || !item.floorId || item.floorId === 'global');
 
             if (items.length > 0) {
                 hasData = true;
@@ -41,7 +40,8 @@ export class DataExporter {
                         Speed:    item.speed    != null ? item.speed    : 1,
                         DashSize: item.dashSize != null ? item.dashSize : 30,
                         GapSize:  item.gapSize  != null ? item.gapSize  : 15,
-                        Tension:  item.tension  != null ? item.tension  : 0.5
+                        Tension:  item.tension  != null ? item.tension  : 0.5,
+                        Shape:    item.shape    || ''
                     }))
                     : renderType === 'area'
                     ? items.map(item => ({

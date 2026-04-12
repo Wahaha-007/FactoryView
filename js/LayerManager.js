@@ -22,6 +22,7 @@ export class LayerManager {
         configLayers.forEach(cfg => {
             const isVisible = (cfg.RenderType === 'area' || cfg.RenderType === 'flow') ? true : (cfg.id === 'it_dev');
             this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon, cfg.RenderType);
+            this.layers[cfg.id].group_name = cfg.Group || 'Other';
             this.layerToTypesMap[cfg.id] = [];
         });
 
@@ -67,9 +68,9 @@ export class LayerManager {
 
         let items = layer.items;
 
-        // 1. FILTER: If a floor is active, only return items on that floor
+        // 1. FILTER: If a floor is active, show items on that floor + global items (cross-floor)
         if (this.activeFloorId) {
-            items = items.filter(item => item.floorId === this.activeFloorId);
+            items = items.filter(item => item.floorId === this.activeFloorId || !item.floorId || item.floorId === 'global');
         }
 
         // 2. SORT: Order by Floor ID (assuming floorId is something like 'floor_1', 'floor_2')
@@ -95,9 +96,12 @@ export class LayerManager {
         if (layer.renderType === 'flow') {
             const flowColor = item.color ? new THREE.Color(item.color) : layer.color;
             const visual = this.factory.createFlowVisual(item, flowColor);
-            visual.position.set(0, heightOffset, 0);
+            // Cross-floor paths (floorId='global' or '') use absolute Y=0;
+            // their points already carry absolute world Y via 3-part "x,z,y" format.
+            const flowYOffset = (!item.floorId || item.floorId === 'global') ? 0 : heightOffset;
+            visual.position.set(0, flowYOffset, 0);
             visual.userData = item;
-            visual.userData.floorOffset = heightOffset;
+            visual.userData.floorOffset = flowYOffset;
 
             layer.group.add(visual);
             layer.items.push(item);
@@ -315,10 +319,11 @@ export class LayerManager {
                 if (!visual.visible || !visual._flowCurve) return;
                 const curve  = visual._flowCurve;
                 const speed  = visual._flowSpeed || 1;
+                const n = visual._flowPulses.length;
                 visual._flowPulses.forEach((pulse, i) => {
-                    const phase = i / 3;
+                    const phase = i / n;
                     const pos = curve.getPointAt(((t * speed * 0.08) + phase) % 1);
-                    pulse.position.set(pos.x, 6, pos.z);
+                    pulse.position.set(pos.x, pos.y + 6, pos.z);
                 });
             });
         });

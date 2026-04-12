@@ -75,7 +75,8 @@ export class EditorManager {
                 const name  = document.getElementById('flow-inp-name').value;
                 const color = document.getElementById('flow-inp-color').value;
                 const speed = document.getElementById('flow-inp-speed').value;
-                this.flowDrawer.confirmPath(name, color, speed);
+                const shape = document.getElementById('flow-inp-shape').value;
+                this.flowDrawer.confirmPath(name, color, speed, shape);
                 this._resetDrawFlowButton();
             });
         }

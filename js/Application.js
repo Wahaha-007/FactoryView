@@ -8,6 +8,7 @@ import { FloorManager } from './FloorManager.js';
 import { UIManager } from './UIManager.js';
 import { DataLoader } from './DataLoader.js';
 import { EditorManager } from './EditorManager.js';
+import { SettingsPanel } from './ui/SettingsPanel.js';
 
 export class Application {
     constructor() {
@@ -22,7 +23,8 @@ export class Application {
         this.floorManager = new FloorManager(this.sceneManager, this.layerManager, this.dataLoader, this.cameraManager);
         this.uiManager = new UIManager(this.layerManager, this.floorManager);
         this.editorManager = new EditorManager(this.layerManager, this.inputManager, this.cameraManager, this.floorManager);
-        
+        this.settingsPanel = new SettingsPanel(this.layerManager);
+
         // Bind the animate loop to 'this' context
         this.animate = this.animate.bind(this);
     }
@@ -56,8 +58,10 @@ export class Application {
                 await this.floorManager.loadAllFloors();
             }
 
-            // 6. Init Editor
+            // 6. Init Editor & Settings
             this.editorManager.init();
+            this.settingsPanel.init();
+            this.settingsPanel.applyStartupVisibility();
 
             // 7. Bind Global Events
             this.bindEvents();

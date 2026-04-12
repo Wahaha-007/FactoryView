@@ -322,3 +322,24 @@ button:hover { background: #555; }
     z-index: 100;
     letter-spacing: 0.05em;
 }
+
+/* Layer group headers */
+.layer-group-header {
+    padding: 5px 4px 5px 2px;
+    margin-top: 8px;
+    font-size: 0.72rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #aaa;
+    background: #2a2a2a;
+    border-bottom: 1px solid #3a3a3a;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.layer-group-header:hover { color: #fff; }
+.layer-group-arrow { font-size: 0.6rem; }
+.layer-group-body { padding-left: 6px; }

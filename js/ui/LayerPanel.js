@@ -3,8 +3,10 @@
 export class LayerPanel {
     constructor(layerManager, updateRightPanelCallback) {
         this.layerManager = layerManager;
-        this.onLayerToggle = updateRightPanelCallback; // Callback to clear right panel if needed
+        this.onLayerToggle = updateRightPanelCallback;
         this.container = document.getElementById('layer-list');
+        // Track which groups are collapsed: groupName -> bool
+        this._collapsed = new Map();
     }
 
     init() {
@@ -14,18 +16,14 @@ export class LayerPanel {
     }
 
     renderControls() {
-        // Insert "All / None" buttons above the list
-        if(!this.container.parentNode) return;
+        if (!this.container.parentNode) return;
 
         const wrapper = document.createElement('div');
         wrapper.style.cssText = 'display:flex; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #444;';
 
-        const btnAll = this.createBtn("All", () => this.setAll(true));
-        const btnNone = this.createBtn("None", () => this.setAll(false));
+        wrapper.appendChild(this.createBtn("All",  () => this.setAll(true)));
+        wrapper.appendChild(this.createBtn("None", () => this.setAll(false)));
 
-        wrapper.appendChild(btnAll);
-        wrapper.appendChild(btnNone);
-        
         this.container.parentNode.insertBefore(wrapper, this.container);
     }
 
@@ -47,40 +45,70 @@ export class LayerPanel {
 
     renderList() {
         this.container.innerHTML = '';
+
+        // Collect layers grouped by group_name, preserving insertion order
+        const groups = new Map(); // groupName -> [{ id, layer }]
         Object.keys(this.layerManager.layers).forEach(id => {
             const layer = this.layerManager.layers[id];
-            
-            const row = document.createElement('div');
-            row.className = 'layer-item'; // CSS class
+            const gname = layer.group_name || 'Other';
+            if (!groups.has(gname)) groups.set(gname, []);
+            groups.get(gname).push({ id, layer });
+        });
 
-            // Checkbox
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = layer.visible;
-            checkbox.onchange = (e) => {
-                this.layerManager.toggleLayer(id, e.target.checked);
-                if (!e.target.checked && this.onLayerToggle) {
-                    this.onLayerToggle(id, false); // Notify to clear selection if layer hidden
-                }
-            };
+        groups.forEach((entries, groupName) => {
+            // Default: groups start expanded
+            if (!this._collapsed.has(groupName)) this._collapsed.set(groupName, false);
 
-            // Color Dot
-            const dot = document.createElement('span');
-            dot.style.cssText = `display:inline-block; width:12px; height:12px; border-radius:50%; margin:0 8px 0 5px; border:1px solid #555; background-color:#${layer.color.getHexString()}`;
+            // Group header
+            const header = document.createElement('div');
+            header.className = 'layer-group-header';
+            const isCollapsed = this._collapsed.get(groupName);
+            header.innerHTML = `<span class="layer-group-arrow">${isCollapsed ? '▶' : '▼'}</span> ${groupName}`;
+            header.addEventListener('click', () => {
+                const cur = this._collapsed.get(groupName);
+                this._collapsed.set(groupName, !cur);
+                body.style.display = !cur ? 'none' : 'block';
+                header.querySelector('.layer-group-arrow').textContent = !cur ? '▶' : '▼';
+            });
+            this.container.appendChild(header);
 
-            // Name Label
-            const label = document.createElement('span');
-            label.textContent = layer.name;
-            label.style.cursor = 'pointer';
-            label.onclick = () => {
-                if (layer.visible && this.onLayerToggle) this.onLayerToggle(id, true);
-                else alert("Turn on the layer first.");
-            };
+            // Group body
+            const body = document.createElement('div');
+            body.className = 'layer-group-body';
+            body.style.display = isCollapsed ? 'none' : 'block';
 
-            row.appendChild(checkbox);
-            row.appendChild(dot);
-            row.appendChild(label);
-            this.container.appendChild(row);
+            entries.forEach(({ id, layer }) => {
+                const row = document.createElement('div');
+                row.className = 'layer-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = layer.visible;
+                checkbox.onchange = (e) => {
+                    this.layerManager.toggleLayer(id, e.target.checked);
+                    if (!e.target.checked && this.onLayerToggle) {
+                        this.onLayerToggle(id, false);
+                    }
+                };
+
+                const dot = document.createElement('span');
+                dot.style.cssText = `display:inline-block; width:12px; height:12px; border-radius:50%; margin:0 8px 0 5px; border:1px solid #555; background-color:#${layer.color.getHexString()}`;
+
+                const label = document.createElement('span');
+                label.textContent = layer.name;
+                label.style.cursor = 'pointer';
+                label.onclick = () => {
+                    if (layer.visible && this.onLayerToggle) this.onLayerToggle(id, true);
+                    else alert("Turn on the layer first.");
+                };
+
+                row.appendChild(checkbox);
+                row.appendChild(dot);
+                row.appendChild(label);
+                body.appendChild(row);
+            });
+
+            this.container.appendChild(body);
         });
     }
 }

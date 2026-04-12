@@ -16,7 +16,7 @@ export class DataLoader {
 
     async loadFloorData(url) {
         // Standard columns — anything else becomes an "extra" shown in Details panel
-        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'Points', 'Speed', 'DashSize', 'GapSize', 'Tension']);
+        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'Points', 'Speed', 'DashSize', 'GapSize', 'Tension', 'Shape']);
 
         try {
             const workbook = await this.fetchWorkbook(url);
@@ -31,6 +31,15 @@ export class DataLoader {
                     const hasPoints   = row.Points !== undefined;
                     if (!hasPosition && !hasPoints) return;
 
+                    // For flow rows (no X/Y), extract position from first waypoint
+                    let itemX = row.X != null ? row.X : 0;
+                    let itemY = row.Y != null ? row.Y : 0;
+                    if (!hasPosition && hasPoints) {
+                        const firstPair = (row.Points || '').split(';')[0].split(',');
+                        itemX = parseFloat(firstPair[0]) || 0;
+                        itemY = parseFloat(firstPair[1]) || 0;
+                    }
+
                     // Capture any column that is NOT in the standard set
                     const extras = {};
                     Object.keys(row).forEach(key => {
@@ -43,8 +52,8 @@ export class DataLoader {
                         layerId:         sheetName,
                         name:            row.Name || '',
                         type:            row.Type,
-                        x:               row.X != null ? row.X : 0,
-                        y:               row.Y != null ? row.Y : 0,
+                        x:               itemX,
+                        y:               itemY,
                         desc:            row.Description,
                         status:          row.Status || "Active",
                         lastAudit:       row.LastAudit || "",
@@ -59,6 +68,7 @@ export class DataLoader {
                         dashSize:        row.DashSize != null ? row.DashSize : 30,
                         gapSize:         row.GapSize  != null ? row.GapSize  : 15,
                         tension:         row.Tension != null ? row.Tension : 0.5,
+                        shape:           row.Shape  || null,
                         extras:          Object.keys(extras).length > 0 ? extras : null
                     });
                 });
