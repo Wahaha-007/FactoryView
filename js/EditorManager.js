@@ -1,4 +1,5 @@
 /* js/editor/EditorManager.js */
+import * as THREE from 'three';
 import { DragController } from './editor/DragController.js';
 import { ContextMenu } from './editor/ContextMenu.js';
 import { AddItemModal } from './editor/AddItemModal.js';
@@ -19,6 +20,12 @@ export class EditorManager {
         // UI Elements
         this.btnEdit = document.getElementById('btn-edit-mode');
         this.btnExport = document.getElementById('btn-export');
+        this.coordDisplay = document.getElementById('coord-display');
+
+        // Coordinate raycasting
+        this.coordRaycaster = new THREE.Raycaster();
+        this.coordMouse = new THREE.Vector2();
+        this.coordPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
         // Sub-Modules
         this.dragController = new DragController(this, layerManager, cameraManager);
@@ -91,6 +98,10 @@ export class EditorManager {
             });
         }
 
+        // Coordinate display on pointer move
+        const canvas = this.cameraManager.controls.domElement;
+        canvas.addEventListener('pointermove', (e) => this._onCoordMove(e));
+
         // Hide button by default
         if (this.btnEdit) this.btnEdit.style.display = 'none';
     }
@@ -129,6 +140,11 @@ export class EditorManager {
             }
         }
 
+        // Coordinate display visibility
+        if (this.coordDisplay) {
+            this.coordDisplay.style.display = this.isEditMode ? 'block' : 'none';
+        }
+
         // Camera Logic
         if (this.isEditMode) {
             if (this.activeFloorInfo) {
@@ -149,4 +165,17 @@ export class EditorManager {
         }
     }
 
+    _onCoordMove(e) {
+        if (!this.isEditMode || !this.coordDisplay) return;
+        const canvas = this.cameraManager.controls.domElement;
+        const rect = canvas.getBoundingClientRect();
+        this.coordMouse.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+        this.coordMouse.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+        this.coordRaycaster.setFromCamera(this.coordMouse, this.cameraManager.camera);
+        this.coordPlane.constant = -(this.activeFloorHeight || 0);
+        const hit = new THREE.Vector3();
+        if (this.coordRaycaster.ray.intersectPlane(this.coordPlane, hit)) {
+            this.coordDisplay.textContent = `X: ${Math.round(hit.x)}   Y: ${Math.round(hit.z)}`;
+        }
+    }
 }
