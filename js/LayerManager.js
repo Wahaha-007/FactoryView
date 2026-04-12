@@ -14,8 +14,12 @@ export class LayerManager {
         
         // Use the new Factory
         this.factory = new AssetFactory();
-        
+
         this.activeFloorId = null; // For filtering
+
+        // Flow animation state — direct material refs, avoids per-frame traversal
+        this._flowMaterials = [];  // [{ mat: LineDashedMaterial, speed: number }]
+        this._flowLastTime = null; // DOMHighResTimeStamp
     }
 
     initFromConfig(configLayers, configTypes) {
@@ -98,6 +102,14 @@ export class LayerManager {
             visual.position.set(0, heightOffset, 0);
             visual.userData = item;
             visual.userData.floorOffset = heightOffset;
+
+            // Collect material refs for the animation loop (avoids per-frame traversal)
+            visual.traverse(c => {
+                if (c.type === 'Line' && c.material) {
+                    this._flowMaterials.push({ mat: c.material, speed: item.speed || 1 });
+                }
+            });
+
             layer.group.add(visual);
             layer.items.push(item);
             return;
@@ -197,6 +209,8 @@ export class LayerManager {
             layer.group.clear();
             layer.items = [];
         });
+        this._flowMaterials = [];
+        this._flowLastTime = null;
     }
 
     updateItemPosition(item, newX, newY) {
@@ -303,18 +317,16 @@ export class LayerManager {
     }
 
     /* --- FLOW ANIMATION --- */
-    updateFlowAnimations(deltaTime) {
-        Object.values(this.layers).forEach(layer => {
-            if (layer.renderType !== 'flow' || !layer.visible) return;
-            layer.group.children.forEach(child => {
-                if (!child.visible) return;
-                child.traverse(c => {
-                    if (c.isLine && c.material && c.material.isLineDashedMaterial) {
-                        c.material.dashOffset -= (c.userData.flowSpeed || 1) * deltaTime * 60;
-                    }
-                });
-            });
-        });
+    updateFlowAnimations() {
+        if (this._flowMaterials.length === 0) return;
+
+        const now = performance.now();
+        const delta = this._flowLastTime !== null ? (now - this._flowLastTime) / 1000 : 0;
+        this._flowLastTime = now;
+
+        for (const { mat, speed } of this._flowMaterials) {
+            mat.dashOffset -= speed * delta * 30;
+        }
     }
 
     /* --- ANIMATED FILTERING --- */

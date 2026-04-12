@@ -241,7 +241,9 @@ export class AssetFactory {
         if (rawPoints.length < 2) return group;
 
         // Smooth curve through all waypoints
-        const curve = new CatmullRomCurve3(rawPoints);
+        // tension: 0 = very curvy, 1 = nearly straight at waypoints (default 0.5)
+        const tension = item.tension != null ? item.tension : 0.5;
+        const curve = new CatmullRomCurve3(rawPoints, false, 'catmullrom', tension);
         const sampleCount = rawPoints.length * 20; // ~20 pts per segment = smooth curves
         const curvePoints = curve.getPoints(sampleCount);
 

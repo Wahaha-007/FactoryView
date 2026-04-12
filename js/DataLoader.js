@@ -16,7 +16,7 @@ export class DataLoader {
 
     async loadFloorData(url) {
         // Standard columns — anything else becomes an "extra" shown in Details panel
-        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'Points', 'Speed', 'DashSize', 'GapSize']);
+        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'Points', 'Speed', 'DashSize', 'GapSize', 'Tension']);
 
         try {
             const workbook = await this.fetchWorkbook(url);
@@ -58,6 +58,7 @@ export class DataLoader {
                         speed:           row.Speed   != null ? row.Speed   : 1,
                         dashSize:        row.DashSize != null ? row.DashSize : 30,
                         gapSize:         row.GapSize  != null ? row.GapSize  : 15,
+                        tension:         row.Tension != null ? row.Tension : 0.5,
                         extras:          Object.keys(extras).length > 0 ? extras : null
                     });
                 });
