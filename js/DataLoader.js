@@ -16,7 +16,7 @@ export class DataLoader {
 
     async loadFloorData(url) {
         // Standard columns — anything else becomes an "extra" shown in Details panel
-        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color']);
+        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness']);
 
         try {
             const workbook = await this.fetchWorkbook(url);
@@ -38,17 +38,21 @@ export class DataLoader {
                         });
 
                         allItems.push({
-                            layerId:   sheetName,
-                            name:      row.Name,
-                            type:      row.Type,
-                            x:         row.X,
-                            y:         row.Y,
-                            desc:      row.Description,
-                            status:    row.Status || "Active",
-                            lastAudit: row.LastAudit || "",
-                            color:     row.Color || null,
-                            // NEW: custom columns dict, e.g. { IP: "192.168.1.1", MAC: "AA:BB:CC" }
-                            extras:    Object.keys(extras).length > 0 ? extras : null
+                            layerId:         sheetName,
+                            name:            row.Name,
+                            type:            row.Type,
+                            x:               row.X,
+                            y:               row.Y,
+                            desc:            row.Description,
+                            status:          row.Status || "Active",
+                            lastAudit:       row.LastAudit || "",
+                            color:           row.Color || null,
+                            width:           row.Width  != null ? row.Width  : null,
+                            height:          row.Height != null ? row.Height : null,
+                            opacity:         row.Opacity != null ? row.Opacity : null,
+                            borderColor:     row.BorderColor || null,
+                            borderThickness: row.BorderThickness != null ? row.BorderThickness : null,
+                            extras:          Object.keys(extras).length > 0 ? extras : null
                         });
                     }
                 });

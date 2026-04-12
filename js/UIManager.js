@@ -23,7 +23,6 @@ export class UIManager {
 
     init() {
         this.leftPanel.init();
-        this.createThemeButton();
         this.createCollapseButton();            // ← NEW
 
         window.addEventListener('floor-isolated', (e) => {
@@ -51,21 +50,6 @@ export class UIManager {
         this.rightPanel.highlightItemInList(item);
     }
 
-    createThemeButton() {
-        const btn = document.createElement('button');
-        btn.id = 'btn-theme';
-        btn.textContent = 'Blueprint Mode';
-        btn.onclick = () => {
-            const isBlue = document.body.classList.toggle('blueprint-mode');
-            btn.textContent = isBlue ? 'Exit Blueprint' : 'Blueprint Mode';
-            this.floorManager.setFloorToBlueprint(isBlue);
-            this.layerManager.setBlueprintMode(isBlue);
-            if (this.floorManager.sceneManager) this.floorManager.sceneManager.setBackground(isBlue);
-        };
-        document.body.appendChild(btn);
-    }
-
-    // ─── NEW ──────────────────────────────────────────────────────────────────
     createCollapseButton() {
         const PANEL_WIDTH = '250px';
 

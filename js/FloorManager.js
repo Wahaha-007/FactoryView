@@ -1,6 +1,5 @@
 /* js/FloorManager.js */
 import * as THREE from 'three';
-import { Materials } from './core/Materials.js';
 
 export class FloorManager {
     constructor(sceneManager, layerManager, dataLoader, cameraManager) {
@@ -12,7 +11,6 @@ export class FloorManager {
         this.floors = [];
         this.floorMeshes = [];
         this.FLOOR_GAP = 300;
-        this.isBlueprintMode = false;
         this.activeFloorIndex = -1; // -1 means All Visible
     }
 
@@ -175,20 +173,4 @@ export class FloorManager {
         window.dispatchEvent(new CustomEvent('floor-restored'));
     }
 
-    /* --- BLUEPRINT MODE --- */
-    setFloorToBlueprint(active) {
-        this.isBlueprintMode = active;
-
-        this.floorMeshes.forEach(mesh => {
-            if (active) {
-                // Apply Shader
-                const texture = mesh.userData.originalMat.map;
-                const bpMat = Materials.createBlueprintMaterial(texture);
-                mesh.material = bpMat;
-            } else {
-                // Restore Original
-                mesh.material = mesh.userData.originalMat;
-            }
-        });
-    }
 }

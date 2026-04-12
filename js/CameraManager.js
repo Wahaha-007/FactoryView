@@ -132,7 +132,7 @@ export class CameraManager {
         }
 
     /* --- REPLACED: SMOOTH SPHERICAL TRANSITION --- */
-    setTopDownView(floorHeight, floorWidth = 2000, floorDepth = 2000, floorCenter = null) {
+    setTopDownView(floorHeight, floorWidth = 2000, floorDepth = 2000, floorCenter = null, lockRotation = true) {
         // 1. SAVE STATE
         this.savedState = {
             position: this.camera.position.clone(),
@@ -203,7 +203,7 @@ export class CameraManager {
                 this.camera.position.copy(this.controls.target).add(newOffset);
             })
             .onComplete(() => {
-                this.controls.enableRotate = false;
+                if (lockRotation) this.controls.enableRotate = false;
                 this.controls.enableDamping = true;
             })
             .start();

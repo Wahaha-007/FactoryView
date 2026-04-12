@@ -102,9 +102,28 @@
         <label>Layer:</label>
         <select id="inp-layer"></select>
 
-        <label>Type:</label>
-        <select id="inp-type"></select>
-        
+        <!-- Device fields -->
+        <div id="device-fields">
+            <label>Type:</label>
+            <select id="inp-type"></select>
+        </div>
+
+        <!-- Area fields (shown when area layer selected) -->
+        <div id="area-fields" style="display:none;">
+            <label>Width:</label>
+            <input type="number" id="inp-width" value="500">
+            <label>Height:</label>
+            <input type="number" id="inp-height" value="400">
+            <label>Fill Color:</label>
+            <input type="color" id="inp-color" value="#ff6600">
+            <label>Fill Opacity (0–1):</label>
+            <input type="number" id="inp-opacity" value="0.25" step="0.05" min="0" max="1">
+            <label>Border Color:</label>
+            <input type="color" id="inp-border-color" value="#ff6600">
+            <label>Border Thickness:</label>
+            <input type="number" id="inp-border-thickness" value="10" min="1">
+        </div>
+
         <div style="margin-top: 15px; text-align: right;">
             <button id="btn-cancel" style="width: auto; background: #666;">Cancel</button>
             <button id="btn-confirm" style="width: auto; background: #00d2ff;">Confirm</button>

@@ -20,8 +20,8 @@ export class LayerManager {
 
     initFromConfig(configLayers, configTypes) {
         configLayers.forEach(cfg => {
-            const isVisible = (cfg.id === 'it_dev');
-            this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon);
+            const isVisible = (cfg.RenderType === 'area') ? true : (cfg.id === 'it_dev');
+            this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon, cfg.RenderType);
             this.layerToTypesMap[cfg.id] = [];
         });
 
@@ -39,7 +39,7 @@ export class LayerManager {
         await this.factory.preloadModels(this.typeToModelMap);
     }
 
-    createLayer(id, name, colorHex, initialVisible = true, icon = null) {
+    createLayer(id, name, colorHex, initialVisible = true, icon = null, renderType = 'device') {
         const group = new THREE.Group();
         group.name = name;
         group.visible = initialVisible;
@@ -51,7 +51,8 @@ export class LayerManager {
             visible: initialVisible,
             color: new THREE.Color(colorHex || '#00d2ff'),
             items: [],
-            icon: icon
+            icon: icon,
+            renderType: renderType || 'device'
         };
         return this.layers[id];
     }
@@ -89,6 +90,27 @@ export class LayerManager {
     addItem(item, heightOffset = 0) {
         const layer = this.layers[item.layerId];
         if (!layer) return;
+
+        // --- AREA LAYER ---
+        if (layer.renderType === 'area') {
+            const visual = this.factory.createAreaVisual(item);
+            visual.position.set(item.x, heightOffset + 2, item.y);
+            visual.userData = item;
+            visual.userData.floorOffset = heightOffset;
+
+            const label = visual.children.find(c => c.isCSS2DObject);
+            if (label) {
+                label.element.onclick = (e) => {
+                    e.stopPropagation();
+                    window.dispatchEvent(new CustomEvent('item-clicked', { detail: item }));
+                };
+                label.visible = layer.visible;
+            }
+
+            layer.group.add(visual);
+            layer.items.push(item);
+            return;
+        }
 
         // 1. Delegate Creation to Factory
         const modelId = this.typeToModelMap[item.type] || 'cone';
@@ -172,11 +194,14 @@ export class LayerManager {
         if(layer) {
             const mesh = layer.group.children.find(child => child.userData === item);
             if(mesh) {
-                const modelId = this.typeToModelMap[item.type] || 'cone';
-                const elevation = (modelId === 'cone') ? 50 : 0;
-                // Keep floor offset if it exists
                 const offset = mesh.userData.floorOffset || 0;
-                mesh.position.set(newX, elevation + offset, newY);
+                if (layer.renderType === 'area') {
+                    mesh.position.set(newX, offset + 2, newY);
+                } else {
+                    const modelId = this.typeToModelMap[item.type] || 'cone';
+                    const elevation = (modelId === 'cone') ? 50 : 0;
+                    mesh.position.set(newX, elevation + offset, newY);
+                }
             }
         }
     }
@@ -226,39 +251,13 @@ export class LayerManager {
         });
     }
 
-    setBlueprintMode(active) {
-        Object.values(this.layers).forEach(layer => {
-            layer.group.traverse((child) => {
-                if (child.isMesh && !child.isCSS2DObject) {
-                    if (active) {
-                        if (!child.userData.originalMat) child.userData.originalMat = child.material;
-                        child.material = new THREE.MeshBasicMaterial({
-                            color: 0x001133, transparent: true, opacity: 0.1, depthWrite: false
-                        });
-                        
-                        if (!child.userData.edgesHelper) {
-                            const edgesGeo = new THREE.EdgesGeometry(child.geometry, 15);
-                            const edgesMat = new THREE.LineBasicMaterial({ color: 0x00ffff });
-                            const edges = new THREE.LineSegments(edgesGeo, edgesMat);
-                            child.add(edges);
-                            child.userData.edgesHelper = edges;
-                        }
-                        child.userData.edgesHelper.visible = true;
-                    } else {
-                        if (child.userData.originalMat) child.material = child.userData.originalMat;
-                        if (child.userData.edgesHelper) child.userData.edgesHelper.visible = false;
-                    }
-                }
-            });
-        });
-    }
-
     /* --- ANIMATION --- */
     highlightItem(item) {
         const layer = this.layers[item.layerId];
         if (!layer) return;
+        if (layer.renderType === 'area') return; // flat areas don't bounce
         const targetMesh = layer.group.children.find(child => child.userData === item);
-        
+
         if (!targetMesh || !layer.visible) return;
 
         const currentY = targetMesh.position.y;
@@ -335,8 +334,9 @@ export class LayerManager {
         child.traverse((c) => {
             if (c.isMesh && c.material) {
                 c.material.transparent = true;
+                const baseOpacity = c.userData.baseOpacity != null ? c.userData.baseOpacity : 1;
                 new TWEEN.Tween(c.material)
-                    .to({ opacity: targetOpacity }, duration)
+                    .to({ opacity: targetOpacity * baseOpacity }, duration)
                     .easing(TWEEN.Easing.Quadratic.Out)
                     .start();
             }

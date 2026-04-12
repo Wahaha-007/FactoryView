@@ -5,13 +5,23 @@ export class AddItemModal {
         this.editor = editor;
         this.layerManager = layerManager;
 
-        // DOM Elements
-        this.modal = document.getElementById('edit-modal');
-        this.inpName = document.getElementById('inp-name');
-        this.inpLayer = document.getElementById('inp-layer');
-        this.inpType = document.getElementById('inp-type');
-        this.btnConfirm = document.getElementById('btn-confirm');
-        this.btnCancel = document.getElementById('btn-cancel');
+        // DOM Elements — device
+        this.modal        = document.getElementById('edit-modal');
+        this.inpName      = document.getElementById('inp-name');
+        this.inpLayer     = document.getElementById('inp-layer');
+        this.inpType      = document.getElementById('inp-type');
+        this.btnConfirm   = document.getElementById('btn-confirm');
+        this.btnCancel    = document.getElementById('btn-cancel');
+        this.deviceFields = document.getElementById('device-fields');
+
+        // DOM Elements — area
+        this.areaFields        = document.getElementById('area-fields');
+        this.inpWidth          = document.getElementById('inp-width');
+        this.inpHeight         = document.getElementById('inp-height');
+        this.inpColor          = document.getElementById('inp-color');
+        this.inpOpacity        = document.getElementById('inp-opacity');
+        this.inpBorderColor    = document.getElementById('inp-border-color');
+        this.inpBorderThickness = document.getElementById('inp-border-thickness');
 
         this.tempPos = null;
     }
@@ -21,8 +31,8 @@ export class AddItemModal {
 
         window.addEventListener('floor-dblclick', (e) => this.onFloorDoubleClick(e));
         this.btnConfirm.addEventListener('click', () => this.confirm());
-        this.btnCancel.addEventListener('click', () => this.hide());
-        this.inpLayer.addEventListener('change', () => this.updateTypeDropdown());
+        this.btnCancel.addEventListener('click',  () => this.hide());
+        this.inpLayer.addEventListener('change',  () => this.updateFields());
     }
 
     onFloorDoubleClick(e) {
@@ -41,82 +51,91 @@ export class AddItemModal {
             this.inpLayer.appendChild(opt);
         });
 
-        this.updateTypeDropdown();
+        this.updateFields();
 
         // Show Modal
         this.modal.style.display = 'block';
         this.modal.style.left = clientX + 'px';
-        this.modal.style.top = clientY + 'px';
+        this.modal.style.top  = clientY + 'px';
 
         this.inpName.value = '';
         this.inpName.focus();
     }
 
-    updateTypeDropdown() {
+    updateFields() {
         const layerId = this.inpLayer.value;
-        const types = this.layerManager.getTypesForLayer(layerId);
+        const layer   = this.layerManager.layers[layerId];
+        const isArea  = layer && layer.renderType === 'area';
 
-        this.inpType.innerHTML = '';
-        types.forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t;
-            opt.textContent = t;
-            this.inpType.appendChild(opt);
-        });
+        this.deviceFields.style.display = isArea ? 'none'  : 'block';
+        this.areaFields.style.display   = isArea ? 'block' : 'none';
+
+        if (!isArea) {
+            const types = this.layerManager.getTypesForLayer(layerId);
+            this.inpType.innerHTML = '';
+            types.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                this.inpType.appendChild(opt);
+            });
+        }
     }
 
     confirm() {
-        const name = this.inpName.value;
+        const name    = this.inpName.value.trim();
         const layerId = this.inpLayer.value;
-        const type = this.inpType.value;
+        const layer   = this.layerManager.layers[layerId];
 
-        // --- NEW LOGIC START ---
-        
-        // 1. Get Active Floor Index from FloorManager (via EditorManager)
         const floorIdx = this.editor.floorManager.activeFloorIndex;
-        
-        // Safety Check
         if (floorIdx === -1 || !this.editor.floorManager.floors[floorIdx]) {
             console.error("Cannot add item: No active floor selected.");
             return;
         }
 
         const currentFloorId = this.editor.floorManager.floors[floorIdx].id;
-        
-        // 2. Calculate Floor Height Offset (Assuming 300 units per floor)
-        // Ideally use FloorManager constant if available, otherwise 300 is the hardcoded gap
-        const floorHeight = floorIdx * 300; 
+        const floorHeight    = floorIdx * 300;
 
         if (!name || !this.tempPos) return;
 
         // Ensure layer is visible
-        const targetLayer = this.layerManager.layers[layerId];
-        if (!targetLayer.visible) {
+        if (!layer.visible) {
             this.layerManager.toggleLayer(layerId, true);
             window.dispatchEvent(new CustomEvent('refresh-layer-list'));
         }
 
-        // 3. Create Item Object
-        const newItem = {
-            layerId: layerId,
-            name: name,
-            type: type,
-            // X and Y correspond to the 2D plane coordinates
-            // (Note: In 3D space, Y is 'Z', but Excel calls it 'Y')
-            x: Math.round(this.tempPos.x),
-            y: Math.round(this.tempPos.z), 
-            desc: "Added via Editor",
-            status: "Active",
-            lastAudit: new Date().toISOString().split('T')[0],
-            floorId: currentFloorId // Tag for Filtering/Exporting
-        };
+        let newItem;
 
-        // 4. Add Item with Visual Offset
-        // pass floorHeight as the second argument to elevate the model
+        if (layer.renderType === 'area') {
+            newItem = {
+                layerId,
+                name,
+                x:               Math.round(this.tempPos.x),
+                y:               Math.round(this.tempPos.z),
+                width:           parseInt(this.inpWidth.value)           || 500,
+                height:          parseInt(this.inpHeight.value)          || 400,
+                color:           this.inpColor.value,
+                opacity:         parseFloat(this.inpOpacity.value)       || 0.25,
+                borderColor:     this.inpBorderColor.value,
+                borderThickness: parseInt(this.inpBorderThickness.value) || 10,
+                desc:    "Added via Editor",
+                floorId: currentFloorId
+            };
+        } else {
+            newItem = {
+                layerId,
+                name,
+                type:      this.inpType.value,
+                x:         Math.round(this.tempPos.x),
+                y:         Math.round(this.tempPos.z),
+                desc:      "Added via Editor",
+                status:    "Active",
+                lastAudit: new Date().toISOString().split('T')[0],
+                floorId:   currentFloorId
+            };
+        }
+
         this.layerManager.addItem(newItem, floorHeight);
-
-        // --- NEW LOGIC END ---
-
         this.hide();
     }
 

@@ -194,6 +194,50 @@ export class AssetFactory {
     }
 
     
+    /* --- AREA VISUAL --- */
+    createAreaVisual(item) {
+        const group = new THREE.Group();
+
+        const w           = item.width  || 500;
+        const h           = item.height || 400;
+        const fillColor   = new THREE.Color(item.color || '#ff6600');
+        const raw         = parseFloat(item.opacity);
+        const fillOpacity = (!isNaN(raw) && raw > 0 && raw <= 1) ? raw : 0.3;
+
+        const fillMat = new THREE.MeshBasicMaterial({
+            color: fillColor,
+            transparent: true,
+            opacity: fillOpacity,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        });
+        const fillMesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), fillMat);
+        fillMesh.rotation.x = -Math.PI / 2;
+        fillMesh.position.y = 0.5;
+        fillMesh.renderOrder = 2;
+        fillMesh.userData.baseOpacity = fillOpacity; // prevent fade system from overwriting to 1
+        group.add(fillMesh);
+
+        // Label
+        const label = this.createAreaLabel(item);
+        label.position.set(0, 1, 0);
+        group.add(label);
+
+        group.userData = item;
+        return group;
+    }
+
+    createAreaLabel(item) {
+        const div = document.createElement('div');
+        div.className = 'area-label';
+        div.textContent = item.name;
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.dispatchEvent(new CustomEvent('item-clicked', { detail: item }));
+        });
+        return new CSS2DObject(div);
+    }
+
     // Update the signature to accept the full item
     createLabel(item, layerIcon) {
         

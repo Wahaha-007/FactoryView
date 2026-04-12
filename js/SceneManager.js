@@ -48,18 +48,6 @@ export class SceneManager {
         window.addEventListener('resize', () => this.onWindowResize(), false);
     }
 
-    /* --- NEW METHOD --- */
-    setBackground(isBlueprint) {
-        if (isBlueprint) {
-            // Match the Blueprint CSS (Deep Navy)
-            // this.scene.background = new THREE.Color(0x001133); 
-            this.scene.background = new THREE.Color(0x000000); 
-        } else {
-            // Revert to Standard (Light Grey)
-            this.scene.background = new THREE.Color(0xf0f0f0);
-        }
-    }
-
     onWindowResize() {
         this.width = this.container.clientWidth;
         this.height = this.container.clientHeight;

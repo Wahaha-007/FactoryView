@@ -33,6 +33,22 @@ export class EditorManager {
         // 1. Bind UI Buttons
         if (this.btnEdit) this.btnEdit.addEventListener('click', () => this.toggleEditMode());
 
+        const btnTop = document.getElementById('btn-top');
+        if (btnTop) {
+            btnTop.addEventListener('click', () => {
+                if (this.activeFloorInfo) {
+                    const lock = this.isEditMode;
+                    this.cameraManager.setTopDownView(
+                        this.activeFloorInfo.height,
+                        this.activeFloorInfo.width,
+                        this.activeFloorInfo.depth,
+                        this.activeFloorInfo.center,
+                        lock
+                    );
+                }
+            });
+        }
+
         // 2. Init Sub-Modules
         this.dragController.init();
         this.contextMenu.init();

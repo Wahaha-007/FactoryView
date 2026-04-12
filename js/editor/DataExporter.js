@@ -31,17 +31,32 @@ export class DataExporter {
 
             if (items.length > 0) {
                 hasData = true;
-                const excelRows = items.map(item => ({
-                    Name: item.name,
-                    Type: item.type,
-                    X: item.x,
-                    Y: item.y,
-                    Description: item.desc || "",
-                    Status: item.status || "Active",
-                    LastAudit: item.lastAudit || "",
-                        // [ADD THIS LINE] Save the color back to the Excel file
-                    Color: item.color || "" 
-                }));
+                const isArea = this.layerManager.layers[layerId] &&
+                               this.layerManager.layers[layerId].renderType === 'area';
+
+                const excelRows = isArea
+                    ? items.map(item => ({
+                        Name:            item.name,
+                        X:               item.x,
+                        Y:               item.y,
+                        Width:           item.width           != null ? item.width           : 500,
+                        Height:          item.height          != null ? item.height          : 400,
+                        Color:           item.color           || "",
+                        Opacity:         item.opacity         != null ? item.opacity         : 0.25,
+                        BorderColor:     item.borderColor     || "",
+                        BorderThickness: item.borderThickness != null ? item.borderThickness : 10,
+                        Description:     item.desc            || ""
+                    }))
+                    : items.map(item => ({
+                        Name:      item.name,
+                        Type:      item.type,
+                        X:         item.x,
+                        Y:         item.y,
+                        Description: item.desc      || "",
+                        Status:    item.status       || "Active",
+                        LastAudit: item.lastAudit    || "",
+                        Color:     item.color        || ""
+                    }));
 
                 const ws = XLSX.utils.json_to_sheet(excelRows);
                 XLSX.utils.book_append_sheet(wb, ws, layerId);
