@@ -247,28 +247,39 @@ export class AssetFactory {
         const sampleCount = rawPoints.length * 20; // ~20 pts per segment = smooth curves
         const curvePoints = curve.getPoints(sampleCount);
 
-        const geometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
-
-        const material = new THREE.LineDashedMaterial({
+        // Static dashed path line
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
+        const lineMat = new THREE.LineDashedMaterial({
             color:       color,
             dashSize:    item.dashSize || 30,
             gapSize:     item.gapSize  || 15,
             transparent: true,
-            opacity:     0.9
+            opacity:     0.6
         });
-
-        const line = new THREE.Line(geometry, material);
-        line.computeLineDistances(); // Required for dashes to render
-
-        // Animate: onBeforeRender fires just before Three.js uploads uniforms for this
-        // object, so dashOffset is guaranteed to be current every frame.
-        const startTime = performance.now();
-        const flowSpeed = item.speed || 1;
-        line.onBeforeRender = function(renderer, scene, camera, geo, mat) {
-            mat.dashOffset = -flowSpeed * (performance.now() - startTime) / 1000 * 30;
-        };
-
+        const line = new THREE.Line(lineGeo, lineMat);
+        line.computeLineDistances();
         group.add(line);
+
+        // Animated pulse dots — 3 small spheres that travel along the curve.
+        // Positions are updated each frame in LayerManager.updateFlowAnimations()
+        // BEFORE renderer.render(), so Three.js always picks up the new positions.
+        const pulseGeo = new THREE.SphereGeometry(8, 8, 6);
+        const pulseMat = new THREE.MeshBasicMaterial({ color: color });
+        const pulses = [];
+        for (let i = 0; i < 3; i++) {
+            const pulse = new THREE.Mesh(pulseGeo, pulseMat);
+            const startPos = rawPoints[0];
+            pulse.position.set(startPos.x, 6, startPos.z);
+            group.add(pulse);
+            pulses.push(pulse);
+        }
+
+        // Store curve + pulse refs directly on the group so updateFlowAnimations can
+        // access them without touching userData (which is reserved for item data).
+        group._flowCurve  = curve;
+        group._flowPulses = pulses;
+        group._flowSpeed  = item.speed || 1;
+
         group.userData = item;
         return group;
     }

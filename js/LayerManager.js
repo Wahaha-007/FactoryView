@@ -16,10 +16,6 @@ export class LayerManager {
         this.factory = new AssetFactory();
 
         this.activeFloorId = null; // For filtering
-
-        // Flow animation state — direct material refs, avoids per-frame traversal
-        this._flowMaterials = [];  // [{ mat: LineDashedMaterial, speed: number }]
-        this._flowLastTime = null; // DOMHighResTimeStamp
     }
 
     initFromConfig(configLayers, configTypes) {
@@ -202,8 +198,6 @@ export class LayerManager {
             layer.group.clear();
             layer.items = [];
         });
-        this._flowMaterials = [];
-        this._flowLastTime = null;
     }
 
     updateItemPosition(item, newX, newY) {
@@ -310,9 +304,25 @@ export class LayerManager {
     }
 
     /* --- FLOW ANIMATION --- */
-    // Animation is driven by line.onBeforeRender in AssetFactory.createFlowVisual.
-    // This stub is kept so Application.js call site doesn't need to change.
-    updateFlowAnimations() {}
+    // Called every frame (before sceneManager.update / renderer.render).
+    // Position updates here are always reflected correctly because Three.js
+    // recomputes world matrices at the start of renderer.render().
+    updateFlowAnimations() {
+        const t = performance.now() / 1000;
+        Object.values(this.layers).forEach(layer => {
+            if (layer.renderType !== 'flow' || !layer.visible) return;
+            layer.group.children.forEach(visual => {
+                if (!visual.visible || !visual._flowCurve) return;
+                const curve  = visual._flowCurve;
+                const speed  = visual._flowSpeed || 1;
+                visual._flowPulses.forEach((pulse, i) => {
+                    const phase = i / 3;
+                    const pos = curve.getPointAt(((t * speed * 0.08) + phase) % 1);
+                    pulse.position.set(pos.x, 6, pos.z);
+                });
+            });
+        });
+    }
 
     /* --- ANIMATED FILTERING --- */
     
