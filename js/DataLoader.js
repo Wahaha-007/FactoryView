@@ -16,7 +16,7 @@ export class DataLoader {
 
     async loadFloorData(url) {
         // Standard columns — anything else becomes an "extra" shown in Details panel
-        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness']);
+        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'Points', 'Speed', 'DashSize', 'GapSize']);
 
         try {
             const workbook = await this.fetchWorkbook(url);
@@ -27,34 +27,39 @@ export class DataLoader {
                 const rows = XLSX.utils.sheet_to_json(sheet);
 
                 rows.forEach(row => {
-                    if (row.X !== undefined && row.Y !== undefined) {
+                    const hasPosition = row.X !== undefined && row.Y !== undefined;
+                    const hasPoints   = row.Points !== undefined;
+                    if (!hasPosition && !hasPoints) return;
 
-                        // Capture any column that is NOT in the standard set
-                        const extras = {};
-                        Object.keys(row).forEach(key => {
-                            if (!STANDARD_COLS.has(key)) {
-                                extras[key] = row[key];
-                            }
-                        });
+                    // Capture any column that is NOT in the standard set
+                    const extras = {};
+                    Object.keys(row).forEach(key => {
+                        if (!STANDARD_COLS.has(key)) {
+                            extras[key] = row[key];
+                        }
+                    });
 
-                        allItems.push({
-                            layerId:         sheetName,
-                            name:            row.Name,
-                            type:            row.Type,
-                            x:               row.X,
-                            y:               row.Y,
-                            desc:            row.Description,
-                            status:          row.Status || "Active",
-                            lastAudit:       row.LastAudit || "",
-                            color:           row.Color || null,
-                            width:           row.Width  != null ? row.Width  : null,
-                            height:          row.Height != null ? row.Height : null,
-                            opacity:         row.Opacity != null ? row.Opacity : null,
-                            borderColor:     row.BorderColor || null,
-                            borderThickness: row.BorderThickness != null ? row.BorderThickness : null,
-                            extras:          Object.keys(extras).length > 0 ? extras : null
-                        });
-                    }
+                    allItems.push({
+                        layerId:         sheetName,
+                        name:            row.Name || '',
+                        type:            row.Type,
+                        x:               row.X != null ? row.X : 0,
+                        y:               row.Y != null ? row.Y : 0,
+                        desc:            row.Description,
+                        status:          row.Status || "Active",
+                        lastAudit:       row.LastAudit || "",
+                        color:           row.Color || null,
+                        width:           row.Width  != null ? row.Width  : null,
+                        height:          row.Height != null ? row.Height : null,
+                        opacity:         row.Opacity != null ? row.Opacity : null,
+                        borderColor:     row.BorderColor || null,
+                        borderThickness: row.BorderThickness != null ? row.BorderThickness : null,
+                        points:          row.Points  || null,
+                        speed:           row.Speed   != null ? row.Speed   : 1,
+                        dashSize:        row.DashSize != null ? row.DashSize : 30,
+                        gapSize:         row.GapSize  != null ? row.GapSize  : 15,
+                        extras:          Object.keys(extras).length > 0 ? extras : null
+                    });
                 });
             });
 

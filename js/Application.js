@@ -134,11 +134,14 @@ export class Application {
         });
     }
 
-    animate() {
+    animate(timestamp = 0) {
         requestAnimationFrame(this.animate);
-        
+
+        const delta = this._lastTimestamp ? (timestamp - this._lastTimestamp) / 1000 : 0;
+        this._lastTimestamp = timestamp;
+
         TWEEN.update(); // <--- CRITICAL: This line must be present!
-        // Update Managers
+        this.layerManager.updateFlowAnimations(delta);
         this.cameraManager.update();
         this.sceneManager.update(); // Handles renderer.render()
     }

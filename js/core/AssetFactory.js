@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { CatmullRomCurve3 } from 'three';
 
 export class AssetFactory {
     constructor() {
@@ -223,6 +224,42 @@ export class AssetFactory {
         label.position.set(0, 1, 0);
         group.add(label);
 
+        group.userData = item;
+        return group;
+    }
+
+    /* --- FLOW VISUAL --- */
+    createFlowVisual(item, color) {
+        const group = new THREE.Group();
+
+        // Parse "x1,z1;x2,z2;..." into Vector3 array (y=0, floor height applied by group)
+        const rawPoints = (item.points || '').split(';').map(pair => {
+            const parts = pair.trim().split(',').map(Number);
+            return new THREE.Vector3(parts[0], 0, parts[1]);
+        }).filter(p => !isNaN(p.x) && !isNaN(p.z));
+
+        if (rawPoints.length < 2) return group;
+
+        // Smooth curve through all waypoints
+        const curve = new CatmullRomCurve3(rawPoints);
+        const sampleCount = rawPoints.length * 20; // ~20 pts per segment = smooth curves
+        const curvePoints = curve.getPoints(sampleCount);
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
+
+        const material = new THREE.LineDashedMaterial({
+            color:       color,
+            dashSize:    item.dashSize || 30,
+            gapSize:     item.gapSize  || 15,
+            transparent: true,
+            opacity:     0.9
+        });
+
+        const line = new THREE.Line(geometry, material);
+        line.computeLineDistances(); // Required for dashes to render
+        line.userData.flowSpeed = item.speed || 1;
+
+        group.add(line);
         group.userData = item;
         return group;
     }

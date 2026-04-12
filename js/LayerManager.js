@@ -20,7 +20,7 @@ export class LayerManager {
 
     initFromConfig(configLayers, configTypes) {
         configLayers.forEach(cfg => {
-            const isVisible = (cfg.RenderType === 'area') ? true : (cfg.id === 'it_dev');
+            const isVisible = (cfg.RenderType === 'area' || cfg.RenderType === 'flow') ? true : (cfg.id === 'it_dev');
             this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon, cfg.RenderType);
             this.layerToTypesMap[cfg.id] = [];
         });
@@ -90,6 +90,18 @@ export class LayerManager {
     addItem(item, heightOffset = 0) {
         const layer = this.layers[item.layerId];
         if (!layer) return;
+
+        // --- FLOW LAYER ---
+        if (layer.renderType === 'flow') {
+            const flowColor = item.color ? new THREE.Color(item.color) : layer.color;
+            const visual = this.factory.createFlowVisual(item, flowColor);
+            visual.position.set(0, heightOffset, 0);
+            visual.userData = item;
+            visual.userData.floorOffset = heightOffset;
+            layer.group.add(visual);
+            layer.items.push(item);
+            return;
+        }
 
         // --- AREA LAYER ---
         if (layer.renderType === 'area') {
@@ -255,7 +267,7 @@ export class LayerManager {
     highlightItem(item) {
         const layer = this.layers[item.layerId];
         if (!layer) return;
-        if (layer.renderType === 'area') return; // flat areas don't bounce
+        if (layer.renderType === 'area' || layer.renderType === 'flow') return;
         const targetMesh = layer.group.children.find(child => child.userData === item);
 
         if (!targetMesh || !layer.visible) return;
@@ -288,6 +300,21 @@ export class LayerManager {
         const layer = this.layers[item.layerId];
         if (!layer) return null;
         return layer.group.children.find(c => c.userData === item);
+    }
+
+    /* --- FLOW ANIMATION --- */
+    updateFlowAnimations(deltaTime) {
+        Object.values(this.layers).forEach(layer => {
+            if (layer.renderType !== 'flow' || !layer.visible) return;
+            layer.group.children.forEach(child => {
+                if (!child.visible) return;
+                child.traverse(c => {
+                    if (c.isLine && c.material && c.material.isLineDashedMaterial) {
+                        c.material.dashOffset -= (c.userData.flowSpeed || 1) * deltaTime * 60;
+                    }
+                });
+            });
+        });
     }
 
     /* --- ANIMATED FILTERING --- */
@@ -330,9 +357,9 @@ export class LayerManager {
 
     // Helper to fade mesh + label
     animateChildOpacity(child, targetOpacity, duration, onComplete) {
-        // 1. Fade Mesh Materials (Recursive for Groups like Laptop)
+        // 1. Fade Mesh + Line Materials (Recursive for Groups)
         child.traverse((c) => {
-            if (c.isMesh && c.material) {
+            if ((c.isMesh || c.isLine) && c.material) {
                 c.material.transparent = true;
                 const baseOpacity = c.userData.baseOpacity != null ? c.userData.baseOpacity : 1;
                 new TWEEN.Tween(c.material)
