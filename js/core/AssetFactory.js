@@ -251,7 +251,7 @@ export class AssetFactory {
         const sampleCount = rawPoints.length * 20; // ~20 pts per segment = smooth curves
         const curvePoints = curve.getPoints(sampleCount);
 
-        // Static dashed path line
+        // Static dashed path line — skipped if item.showLine === false
         const lineGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
         const lineMat = new THREE.LineDashedMaterial({
             color:       color,
@@ -262,19 +262,37 @@ export class AssetFactory {
         });
         const line = new THREE.Line(lineGeo, lineMat);
         line.computeLineDistances();
-        group.add(line);
+        if (item.showLine !== false) group.add(line);
+
+        // Invisible hit tube — static mesh wrapping the path, used for hover raycasting.
+        // TubeGeometry with visible=false lets us detect hover reliably (THREE.Line can't be raycasted).
+        const hitGeo  = new THREE.TubeGeometry(curve, Math.max(20, rawPoints.length * 5), 15, 4, false);
+        const hitMat  = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
+        const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+        group.add(hitMesh);
+        group._flowHitMesh   = hitMesh;
+        group._flowLine      = item.showLine !== false ? line : null;
+        group._flowLineColor = new THREE.Color(color);
 
         // Animated pulse objects — count scales with curve length so density is uniform.
         // Positions are updated each frame in LayerManager.updateFlowAnimations()
         // BEFORE renderer.render(), so Three.js always picks up the new positions.
-        const pulseGeo = this._createPulseGeometry(item.shape);
-        const pulseMat = new THREE.MeshBasicMaterial({ color: color });
         const pulseCount = Math.max(1, Math.round(curve.getLength() / 250));
         const pulses = [];
         const startPos = rawPoints[0];
         for (let i = 0; i < pulseCount; i++) {
-            const pulse = new THREE.Mesh(pulseGeo, pulseMat);
+            const pulse = this._createPulseObject(item.shape, color);
             pulse.position.set(startPos.x, startPos.y + 6, startPos.z);
+
+            // Human pulses get per-instance randomness for natural movement
+            if (item.shape === 'human') {
+                pulse._isHuman     = true;
+                pulse._lateralBias = (Math.random() - 0.5) * 6;
+                pulse._lateralAmp  = 2 + Math.random() * 3;
+                pulse._lateralSeed = Math.random() * Math.PI * 2;
+                pulse._speedSeed   = Math.random() * Math.PI * 2;
+            }
+
             group.add(pulse);
             pulses.push(pulse);
         }
@@ -289,18 +307,81 @@ export class AssetFactory {
         return group;
     }
 
-    _createPulseGeometry(shape) {
+    // Returns a Mesh or Group. Box-type shapes get subtle edge lines using a
+    // tinted-dark version of the fill colour (not pure black — avoids black-blob at zoom-out).
+    _createPulseObject(shape, color) {
+        const mat     = new THREE.MeshBasicMaterial({ color });
+        const edgeColor = new THREE.Color(color).multiplyScalar(0.35);
+        const edgeMat   = new THREE.LineBasicMaterial({ color: edgeColor });
+
+        const withEdges = (mesh) => {
+            mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), edgeMat));
+            return mesh;
+        };
+
         switch (shape) {
-            case 'box':       return new THREE.BoxGeometry(16, 12, 20);
-            case 'small_box': return new THREE.BoxGeometry(10, 8, 12);
-            case 'can':       return new THREE.CylinderGeometry(5, 5, 14, 12);
+            case 'box':
+                return withEdges(new THREE.Mesh(new THREE.BoxGeometry(16, 12, 20), mat));
+            case 'small_box':
+                return withEdges(new THREE.Mesh(new THREE.BoxGeometry(10, 8, 12), mat));
+            case 'can': {
+                // Rounded shape — no edges, silhouette is enough
+                return new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 14, 12), mat);
+            }
             case 'sack': {
-                const g = new THREE.CapsuleGeometry(5, 12, 4, 8);
-                g.rotateZ(Math.PI / 2);
+                const geo = new THREE.CapsuleGeometry(5, 12, 4, 8);
+                geo.rotateZ(Math.PI / 2);
+                return new THREE.Mesh(geo, mat); // no edges on organic shape
+            }
+            case 'powder':
+                return new THREE.Mesh(new THREE.SphereGeometry(5, 6, 4), mat); // soft — no hard edges
+
+            case 'pallet': {
+                // Flat wooden pallet carrying 4 boxes in a 2×2 arrangement (1.5× scale)
+                const g = new THREE.Group();
+                const base = withEdges(new THREE.Mesh(new THREE.BoxGeometry(33, 4.5, 22.5), mat));
+                base.position.y = 2.25;
+                g.add(base);
+                [[-8.25, -5.25], [8.25, -5.25], [-8.25, 5.25], [8.25, 5.25]].forEach(([bx, bz]) => {
+                    const box = withEdges(new THREE.Mesh(new THREE.BoxGeometry(13.5, 12, 9), mat));
+                    box.position.set(bx, 10.5, bz);
+                    g.add(box);
+                });
                 return g;
             }
-            case 'powder':    return new THREE.SphereGeometry(5, 6, 4);
-            default:          return new THREE.SphereGeometry(8, 8, 6);
+
+            case 'human': {
+                // Stylised human figure: head + body + arms + legs
+                const g = new THREE.Group();
+                // head
+                g.add(new THREE.Mesh(new THREE.SphereGeometry(3, 8, 6), mat));
+                // neck + body
+                const body = withEdges(new THREE.Mesh(new THREE.CylinderGeometry(2, 2.5, 9, 8), mat));
+                body.position.y = -7.5;
+                g.add(body);
+                // left arm
+                const lArm = withEdges(new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 7, 6), mat));
+                lArm.position.set(-4, -6, 0); lArm.rotation.z = 0.4;
+                g.add(lArm);
+                // right arm
+                const rArm = withEdges(new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 7, 6), mat));
+                rArm.position.set(4, -6, 0); rArm.rotation.z = -0.4;
+                g.add(rArm);
+                // left leg
+                const lLeg = withEdges(new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1, 8, 6), mat));
+                lLeg.position.set(-2, -16, 0);
+                g.add(lLeg);
+                // right leg
+                const rLeg = withEdges(new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1, 8, 6), mat));
+                rLeg.position.set(2, -16, 0);
+                g.add(rLeg);
+                // Position head at top (shift the whole figure up so feet are at y≈0)
+                g.position.y = 20;
+                return g;
+            }
+
+            default: // sphere — no hard edges needed
+                return new THREE.Mesh(new THREE.SphereGeometry(8, 8, 6), mat);
         }
     }
 
@@ -308,6 +389,7 @@ export class AssetFactory {
         const div = document.createElement('div');
         div.className = 'area-label';
         div.textContent = item.name;
+        if (item.fontSize) div.style.fontSize = item.fontSize + 'px';
         div.addEventListener('click', (e) => {
             e.stopPropagation();
             window.dispatchEvent(new CustomEvent('item-clicked', { detail: item }));

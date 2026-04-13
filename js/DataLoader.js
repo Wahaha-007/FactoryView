@@ -16,7 +16,7 @@ export class DataLoader {
 
     async loadFloorData(url) {
         // Standard columns — anything else becomes an "extra" shown in Details panel
-        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'Points', 'Speed', 'DashSize', 'GapSize', 'Tension', 'Shape']);
+        const STANDARD_COLS = new Set(['Name', 'Type', 'X', 'Y', 'X1', 'Y1', 'X2', 'Y2', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'FontSize', 'Points', 'Speed', 'DashSize', 'GapSize', 'Tension', 'Shape', 'ShowLine', 'Product']);
 
         try {
             const workbook = await this.fetchWorkbook(url);
@@ -27,17 +27,32 @@ export class DataLoader {
                 const rows = XLSX.utils.sheet_to_json(sheet);
 
                 rows.forEach(row => {
-                    const hasPosition = row.X !== undefined && row.Y !== undefined;
-                    const hasPoints   = row.Points !== undefined;
-                    if (!hasPosition && !hasPoints) return;
+                    const hasPosition  = row.X  !== undefined && row.Y  !== undefined;
+                    const hasCorners   = row.X1 !== undefined && row.Y1 !== undefined &&
+                                        row.X2 !== undefined && row.Y2 !== undefined;
+                    const hasPoints    = row.Points !== undefined;
+                    if (!hasPosition && !hasCorners && !hasPoints) return;
 
-                    // For flow rows (no X/Y), extract position from first waypoint
-                    let itemX = row.X != null ? row.X : 0;
-                    let itemY = row.Y != null ? row.Y : 0;
-                    if (!hasPosition && hasPoints) {
-                        const firstPair = (row.Points || '').split(';')[0].split(',');
-                        itemX = parseFloat(firstPair[0]) || 0;
-                        itemY = parseFloat(firstPair[1]) || 0;
+                    // Area rows use corner format (X1,Y1,X2,Y2); derive center + size.
+                    // Legacy rows with X/Y/Width/Height also still work.
+                    let itemX, itemY, itemWidth, itemHeight;
+                    if (hasCorners) {
+                        const x1 = row.X1, y1 = row.Y1, x2 = row.X2, y2 = row.Y2;
+                        itemX      = (x1 + x2) / 2;
+                        itemY      = (y1 + y2) / 2;
+                        itemWidth  = Math.abs(x2 - x1);
+                        itemHeight = Math.abs(y2 - y1);
+                    } else {
+                        // For flow rows (no X/Y), extract position from first waypoint
+                        itemX = row.X != null ? row.X : 0;
+                        itemY = row.Y != null ? row.Y : 0;
+                        if (!hasPosition && hasPoints) {
+                            const firstPair = (row.Points || '').split(';')[0].split(',');
+                            itemX = parseFloat(firstPair[0]) || 0;
+                            itemY = parseFloat(firstPair[1]) || 0;
+                        }
+                        itemWidth  = row.Width  != null ? row.Width  : null;
+                        itemHeight = row.Height != null ? row.Height : null;
                     }
 
                     // Capture any column that is NOT in the standard set
@@ -49,26 +64,32 @@ export class DataLoader {
                     });
 
                     allItems.push({
-                        layerId:         sheetName,
-                        name:            row.Name || '',
-                        type:            row.Type,
-                        x:               itemX,
-                        y:               itemY,
+                        layerId:  sheetName,
+                        name:     row.Name || '',
+                        type:     row.Type,
+                        x:        itemX,
+                        y:        itemY,
+                        // Corner coords stored for round-trip export
+                        x1:       row.X1 != null ? row.X1 : null,
+                        y1:       row.Y1 != null ? row.Y1 : null,
+                        x2:       row.X2 != null ? row.X2 : null,
+                        y2:       row.Y2 != null ? row.Y2 : null,
                         desc:            row.Description,
                         status:          row.Status || "Active",
                         lastAudit:       row.LastAudit || "",
                         color:           row.Color || null,
-                        width:           row.Width  != null ? row.Width  : null,
-                        height:          row.Height != null ? row.Height : null,
+                        width:           itemWidth,
+                        height:          itemHeight,
                         opacity:         row.Opacity != null ? row.Opacity : null,
-                        borderColor:     row.BorderColor || null,
-                        borderThickness: row.BorderThickness != null ? row.BorderThickness : null,
+                        fontSize:        row.FontSize != null ? row.FontSize : null,
                         points:          row.Points  || null,
                         speed:           row.Speed   != null ? row.Speed   : 1,
                         dashSize:        row.DashSize != null ? row.DashSize : 30,
                         gapSize:         row.GapSize  != null ? row.GapSize  : 15,
                         tension:         row.Tension != null ? row.Tension : 0.5,
-                        shape:           row.Shape  || null,
+                        shape:           row.Shape    || null,
+                        showLine:        row.ShowLine != null ? Boolean(row.ShowLine) : true,
+                        product:         row.Product  || null,
                         extras:          Object.keys(extras).length > 0 ? extras : null
                     });
                 });

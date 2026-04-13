@@ -15,13 +15,14 @@ export class AddItemModal {
         this.deviceFields = document.getElementById('device-fields');
 
         // DOM Elements — area
-        this.areaFields        = document.getElementById('area-fields');
-        this.inpWidth          = document.getElementById('inp-width');
-        this.inpHeight         = document.getElementById('inp-height');
-        this.inpColor          = document.getElementById('inp-color');
-        this.inpOpacity        = document.getElementById('inp-opacity');
-        this.inpBorderColor    = document.getElementById('inp-border-color');
-        this.inpBorderThickness = document.getElementById('inp-border-thickness');
+        this.areaFields  = document.getElementById('area-fields');
+        this.inpX1       = document.getElementById('inp-x1');
+        this.inpY1       = document.getElementById('inp-y1');
+        this.inpX2       = document.getElementById('inp-x2');
+        this.inpY2       = document.getElementById('inp-y2');
+        this.inpColor    = document.getElementById('inp-color');
+        this.inpOpacity  = document.getElementById('inp-opacity');
+        this.inpFontSize = document.getElementById('inp-font-size');
 
         this.tempPos = null;
     }
@@ -54,6 +55,15 @@ export class AddItemModal {
         this.updateFields();
 
         // Show Modal
+        // Pre-fill area corner defaults centred on click point
+        if (this.inpX1) {
+            const cx = Math.round(point.x), cz = Math.round(point.z);
+            this.inpX1.value = cx - 250;
+            this.inpY1.value = cz - 200;
+            this.inpX2.value = cx + 250;
+            this.inpY2.value = cz + 200;
+        }
+
         this.modal.style.display = 'block';
         this.modal.style.left = clientX + 'px';
         this.modal.style.top  = clientY + 'px';
@@ -107,17 +117,21 @@ export class AddItemModal {
         let newItem;
 
         if (layer.renderType === 'area') {
+            const x1 = parseInt(this.inpX1.value) || 0;
+            const y1 = parseInt(this.inpY1.value) || 0;
+            const x2 = parseInt(this.inpX2.value) || 500;
+            const y2 = parseInt(this.inpY2.value) || 400;
             newItem = {
                 layerId,
                 name,
-                x:               Math.round(this.tempPos.x),
-                y:               Math.round(this.tempPos.z),
-                width:           parseInt(this.inpWidth.value)           || 500,
-                height:          parseInt(this.inpHeight.value)          || 400,
-                color:           this.inpColor.value,
-                opacity:         parseFloat(this.inpOpacity.value)       || 0.25,
-                borderColor:     this.inpBorderColor.value,
-                borderThickness: parseInt(this.inpBorderThickness.value) || 10,
+                x:        (x1 + x2) / 2,
+                y:        (y1 + y2) / 2,
+                x1, y1, x2, y2,
+                width:    Math.abs(x2 - x1),
+                height:   Math.abs(y2 - y1),
+                color:    this.inpColor.value,
+                opacity:  parseFloat(this.inpOpacity.value)  || 0.25,
+                fontSize: parseInt(this.inpFontSize.value)   || 14,
                 desc:    "Added via Editor",
                 floorId: currentFloorId
             };

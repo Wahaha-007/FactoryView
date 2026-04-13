@@ -31,6 +31,7 @@
         <div class="divider"></div>
         <h3>View Controls</h3>
         <button id="btn-top">Reset Top View</button>
+        <button id="btn-pause-flow">⏸ Pause Flow</button>
         <div class="hint">
             Rotate: Arrows<br>
             Pan: Right Click<br>
@@ -115,18 +116,20 @@
 
         <!-- Area fields (shown when area layer selected) -->
         <div id="area-fields" style="display:none;">
-            <label>Width:</label>
-            <input type="number" id="inp-width" value="500">
-            <label>Height:</label>
-            <input type="number" id="inp-height" value="400">
+            <label>Upper-Left X:</label>
+            <input type="number" id="inp-x1" value="0">
+            <label>Upper-Left Y:</label>
+            <input type="number" id="inp-y1" value="0">
+            <label>Lower-Right X:</label>
+            <input type="number" id="inp-x2" value="500">
+            <label>Lower-Right Y:</label>
+            <input type="number" id="inp-y2" value="400">
             <label>Fill Color:</label>
             <input type="color" id="inp-color" value="#ff6600">
             <label>Fill Opacity (0–1):</label>
             <input type="number" id="inp-opacity" value="0.25" step="0.05" min="0" max="1">
-            <label>Border Color:</label>
-            <input type="color" id="inp-border-color" value="#ff6600">
-            <label>Border Thickness:</label>
-            <input type="number" id="inp-border-thickness" value="10" min="1">
+            <label>Font Size (px):</label>
+            <input type="number" id="inp-font-size" value="14" min="6" max="72">
         </div>
 
         <div style="margin-top: 15px; text-align: right;">
@@ -152,7 +155,15 @@
             <option value="can">Can</option>
             <option value="sack">Sack (horizontal)</option>
             <option value="powder">Powder</option>
+            <option value="pallet">Pallet (boxes stacked)</option>
+            <option value="human">Human (walking)</option>
         </select>
+        <label>Product / Label:</label>
+        <input type="text" id="flow-inp-product" autocomplete="off" placeholder="e.g. Corn Flour, Staff">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="checkbox" id="flow-inp-showline" checked style="width:auto; margin:0;">
+            Show dashed line
+        </label>
         <div style="margin-top:14px; text-align:right;">
             <button id="flow-finish-cancel" style="width:auto; background:#666;">Cancel</button>
             <button id="flow-finish-confirm" style="width:auto; background:#00d2ff;">Add Path</button>
@@ -163,6 +174,9 @@
     <div id="context-menu" style="display:none; position:fixed; z-index:2000; background:#333; border:1px solid #555; padding:5px; border-radius:4px; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
         <button id="btn-delete" style="background:#d9534f; color:white; border:none; padding:8px 15px; cursor:pointer; width:100%;">Delete Item</button>
     </div>
+
+    <!-- Flow Hover Tooltip -->
+    <div id="flow-tooltip" style="display:none; position:fixed; z-index:1000; background:rgba(0,0,0,0.78); color:#fff; padding:5px 10px; border-radius:4px; font-size:0.8rem; pointer-events:none; white-space:nowrap;"></div>
 
     <!-- Settings Modal -->
     <div id="settings-modal" style="display:none; position:fixed; z-index:3000; background:#2a2a2a; border:1px solid #555; padding:20px; border-radius:6px; min-width:280px; max-width:340px; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 4px 24px rgba(0,0,0,0.7);">

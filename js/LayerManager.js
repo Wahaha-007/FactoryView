@@ -16,6 +16,22 @@ export class LayerManager {
         this.factory = new AssetFactory();
 
         this.activeFloorId = null; // For filtering
+
+        // Flow pause state
+        this._flowPaused      = false;
+        this._flowPauseOffset = 0;
+        this._pauseStart      = 0;
+        this._lastFlowT       = 0;
+    }
+
+    toggleFlowPause() {
+        if (this._flowPaused) {
+            this._flowPauseOffset += performance.now() - this._pauseStart;
+            this._flowPaused = false;
+        } else {
+            this._pauseStart = performance.now();
+            this._flowPaused = true;
+        }
     }
 
     initFromConfig(configLayers, configTypes) {
@@ -312,7 +328,13 @@ export class LayerManager {
     // Position updates here are always reflected correctly because Three.js
     // recomputes world matrices at the start of renderer.render().
     updateFlowAnimations() {
-        const t = performance.now() / 1000;
+        // Always update _lastFlowT when running; freeze it when paused so
+        // pulses stay exactly in place instead of the loop early-returning
+        // (which can leave stale positions from the last frame).
+        if (!this._flowPaused) {
+            this._lastFlowT = (performance.now() - this._flowPauseOffset) / 1000;
+        }
+        const t = this._lastFlowT;
         Object.values(this.layers).forEach(layer => {
             if (layer.renderType !== 'flow' || !layer.visible) return;
             layer.group.children.forEach(visual => {
@@ -322,8 +344,21 @@ export class LayerManager {
                 const n = visual._flowPulses.length;
                 visual._flowPulses.forEach((pulse, i) => {
                     const phase = i / n;
-                    const pos = curve.getPointAt(((t * speed * 0.08) + phase) % 1);
-                    pulse.position.set(pos.x, pos.y + 6, pos.z);
+
+                    if (pulse._isHuman) {
+                        // Variable walking speed + slight lateral wander
+                        const speedMod = 1 + 0.18 * Math.sin(t * 2.0 + pulse._speedSeed);
+                        const tVal = ((t * speed * 0.005 * speedMod) + phase) % 1;
+                        const pos     = curve.getPointAt(tVal);
+                        const tangent = curve.getTangentAt(tVal);
+                        // Perpendicular direction in XZ plane
+                        const perp = new THREE.Vector3(-tangent.z, 0, tangent.x);
+                        const lat  = pulse._lateralBias + pulse._lateralAmp * Math.sin(t * 0.6 + pulse._lateralSeed);
+                        pulse.position.set(pos.x + perp.x * lat, pos.y + 6, pos.z + perp.z * lat);
+                    } else {
+                        const pos = curve.getPointAt(((t * speed * 0.08) + phase) % 1);
+                        pulse.position.set(pos.x, pos.y + 6, pos.z);
+                    }
                 });
             });
         });

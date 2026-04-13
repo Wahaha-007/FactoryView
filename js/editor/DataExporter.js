@@ -41,21 +41,29 @@ export class DataExporter {
                         DashSize: item.dashSize != null ? item.dashSize : 30,
                         GapSize:  item.gapSize  != null ? item.gapSize  : 15,
                         Tension:  item.tension  != null ? item.tension  : 0.5,
-                        Shape:    item.shape    || ''
+                        Shape:    item.shape    || '',
+                        ShowLine: item.showLine != null ? item.showLine : true,
+                        Product:  item.product  || ''
                     }))
                     : renderType === 'area'
-                    ? items.map(item => ({
-                        Name:            item.name,
-                        X:               item.x,
-                        Y:               item.y,
-                        Width:           item.width           != null ? item.width           : 500,
-                        Height:          item.height          != null ? item.height          : 400,
-                        Color:           item.color           || "",
-                        Opacity:         item.opacity         != null ? item.opacity         : 0.25,
-                        BorderColor:     item.borderColor     || "",
-                        BorderThickness: item.borderThickness != null ? item.borderThickness : 10,
-                        Description:     item.desc            || ""
-                    }))
+                    ? items.map(item => {
+                        // Use stored corners if available; otherwise compute from center+size
+                        const x1 = item.x1 != null ? item.x1 : item.x - (item.width  || 500) / 2;
+                        const y1 = item.y1 != null ? item.y1 : item.y - (item.height || 400) / 2;
+                        const x2 = item.x2 != null ? item.x2 : item.x + (item.width  || 500) / 2;
+                        const y2 = item.y2 != null ? item.y2 : item.y + (item.height || 400) / 2;
+                        return {
+                            Name:        item.name,
+                            X1:          Math.round(x1),
+                            Y1:          Math.round(y1),
+                            X2:          Math.round(x2),
+                            Y2:          Math.round(y2),
+                            Color:       item.color   || "",
+                            Opacity:     item.opacity != null ? item.opacity : 0.25,
+                            FontSize:    item.fontSize != null ? item.fontSize : 14,
+                            Description: item.desc    || ""
+                        };
+                    })
                     : items.map(item => ({
                         Name:        item.name,
                         Type:        item.type,

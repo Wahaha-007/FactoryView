@@ -76,6 +76,17 @@ export class Application {
     }
 
     bindEvents() {
+        // Pause Flow button
+        const btnPause = document.getElementById('btn-pause-flow');
+        if (btnPause) {
+            btnPause.addEventListener('click', () => {
+                this.layerManager.toggleFlowPause();
+                const paused = this.layerManager._flowPaused;
+                btnPause.textContent   = paused ? '▶ Resume Flow' : '⏸ Pause Flow';
+                btnPause.style.background = paused ? '#28a745' : '';
+            });
+        }
+
         // Window Resize
         window.addEventListener('resize', () => {
             this.sceneManager.onWindowResize();

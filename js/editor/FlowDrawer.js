@@ -48,7 +48,7 @@ export class FlowDrawer {
         if (this.modal) this.modal.style.display = 'block';
     }
 
-    confirmPath(name, color, speed, shape) {
+    confirmPath(name, color, speed, shape, product, showLine) {
         if (!name.trim()) { alert('Please enter a path name.'); return; }
 
         const points = this.waypoints
@@ -70,7 +70,9 @@ export class FlowDrawer {
             dashSize: 30,
             gapSize:  15,
             tension:  0.5,
-            shape:    shape || null,
+            shape:    shape    || null,
+            product:  product  || null,
+            showLine: showLine !== false,
             floorId:  floor.id,
             desc:     'Added via Editor'
         };

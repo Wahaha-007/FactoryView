@@ -72,11 +72,13 @@ export class EditorManager {
         const btnFlowConfirm = document.getElementById('flow-finish-confirm');
         if (btnFlowConfirm) {
             btnFlowConfirm.addEventListener('click', () => {
-                const name  = document.getElementById('flow-inp-name').value;
-                const color = document.getElementById('flow-inp-color').value;
-                const speed = document.getElementById('flow-inp-speed').value;
-                const shape = document.getElementById('flow-inp-shape').value;
-                this.flowDrawer.confirmPath(name, color, speed, shape);
+                const name     = document.getElementById('flow-inp-name').value;
+                const color    = document.getElementById('flow-inp-color').value;
+                const speed    = document.getElementById('flow-inp-speed').value;
+                const shape    = document.getElementById('flow-inp-shape').value;
+                const product  = document.getElementById('flow-inp-product').value;
+                const showLine = document.getElementById('flow-inp-showline').checked;
+                this.flowDrawer.confirmPath(name, color, speed, shape, product, showLine);
                 this._resetDrawFlowButton();
             });
         }
