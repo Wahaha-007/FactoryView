@@ -62,6 +62,8 @@ export class Application {
             this.editorManager.init();
             this.settingsPanel.init();
             this.settingsPanel.applyStartupVisibility();
+            // Sync layer-panel checkboxes with the visibility just applied
+            this.uiManager.renderLayerList();
 
             // 7. Bind Global Events
             this.bindEvents();
@@ -84,6 +86,15 @@ export class Application {
                 const paused = this.layerManager._flowPaused;
                 btnPause.textContent   = paused ? '▶ Resume Flow' : '⏸ Pause Flow';
                 btnPause.style.background = paused ? '#28a745' : '';
+            });
+        }
+
+        // Toggle Labels button
+        const btnLabels = document.getElementById('btn-toggle-labels');
+        if (btnLabels) {
+            btnLabels.addEventListener('click', () => {
+                const visible = this.layerManager.toggleLabels();
+                btnLabels.textContent = visible ? 'Hide Labels' : 'Show Labels';
             });
         }
 

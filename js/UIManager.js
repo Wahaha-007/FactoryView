@@ -75,5 +75,8 @@ export class UIManager {
             }, 320);
         });
     }
+    renderLayerList() {
+        this.leftPanel.renderList();
+    }
     // ─────────────────────────────────────────────────────────────────────────
 }

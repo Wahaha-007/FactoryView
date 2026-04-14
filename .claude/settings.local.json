@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -)",
+      "Bash(python -)",
+      "Bash(python -c ':*)",
+      "Bash(ls assets/*.xlsx)",
+      "Bash(ls assets/~*)"
+    ]
+  }
+}

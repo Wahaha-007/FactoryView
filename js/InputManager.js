@@ -88,7 +88,6 @@ export class InputManager extends EventTarget {
                 this._hoveredVisual = visual;
                 if (visual._flowLine) {
                     visual._flowLine.material.opacity = 1.0;
-                    visual._flowLine.material.color.setHex(0xffffff);
                 }
             }
             const item = visual?.userData;
@@ -109,7 +108,6 @@ export class InputManager extends EventTarget {
             const line = this._hoveredVisual._flowLine;
             if (line) {
                 line.material.opacity = 0.6;
-                line.material.color.copy(this._hoveredVisual._flowLineColor);
             }
             this._hoveredVisual = null;
         }

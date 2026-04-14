@@ -22,6 +22,39 @@ export class LayerManager {
         this._flowPauseOffset = 0;
         this._pauseStart      = 0;
         this._lastFlowT       = 0;
+
+        // Label visibility toggle
+        this._labelsVisible   = true;
+    }
+
+    toggleLabels() {
+        this._labelsVisible = !this._labelsVisible;
+        Object.values(this.layers).forEach(layer => {
+            if (!this._labelsVisible) {
+                // Hide all labels unconditionally
+                layer.group.traverse(child => {
+                    if (child.isCSS2DObject) child.visible = false;
+                });
+            } else {
+                // Show labels only for items that are actually visible:
+                // layer must be enabled AND the item must not be filtered out by floor
+                if (!layer.visible) return;
+                layer.group.children.forEach(visual => {
+                    if (!visual.visible) return; // hidden by floor filter
+                    visual.traverse(child => {
+                        if (child.isCSS2DObject) {
+                            child.visible = true;
+                            // Also reset DOM opacity — the floor-switch fade animation
+                            // may have left element.style.opacity = '0' even though
+                            // the Three.js visible flag is now true.
+                            child.element.style.transition = 'opacity 0.2s';
+                            child.element.style.opacity = 1;
+                        }
+                    });
+                });
+            }
+        });
+        return this._labelsVisible;
     }
 
     toggleFlowPause() {
@@ -254,7 +287,14 @@ export class LayerManager {
                 }
                 child.visible = shouldBeVisible;
                 const label = child.children.find(c => c.isCSS2DObject);
-                if (label) label.visible = shouldBeVisible;
+                if (label) {
+                    const labelOn = shouldBeVisible && this._labelsVisible;
+                    label.visible = labelOn;
+                    if (labelOn) {
+                        label.element.style.transition = '';
+                        label.element.style.opacity = 1;
+                    }
+                }
             });
         }
     }
@@ -381,8 +421,16 @@ export class LayerManager {
                 if (isOnFloor) child.visible = true;
 
                 this.animateChildOpacity(child, targetOpacity, duration, () => {
-                    // If faded out completely, set visible = false for performance
-                    if (targetOpacity === 0) child.visible = false;
+                    // Guard against stale timeouts: only hide if this item's floor
+                    // is still not the active floor at the time the timer fires.
+                    // Rapid floor-switching would otherwise hide items that have
+                    // already been re-shown by the newer switch.
+                    if (targetOpacity === 0) {
+                        const fd = child.userData.floorId;
+                        const current = this.activeFloorId;
+                        if (!current || fd === current || !fd || fd === 'global') return;
+                        child.visible = false;
+                    }
                 });
             });
         });
@@ -425,12 +473,12 @@ export class LayerManager {
                 label.element.style.transition = `opacity ${duration}ms`;
                 label.element.style.opacity = 0;
             } else {
-                // Show then fade in
-                label.visible = true;
+                // Show then fade in — only if labels are globally enabled
+                label.visible = this._labelsVisible;
                 // Force reflow
-                label.element.offsetHeight; 
+                label.element.offsetHeight;
                 label.element.style.transition = `opacity ${duration}ms`;
-                label.element.style.opacity = 1;
+                label.element.style.opacity = this._labelsVisible ? 1 : 0;
             }
         }
 
