@@ -45,10 +45,22 @@ export class FlowDrawer {
             alert('Add at least 2 waypoints before finishing.');
             return;
         }
+        // Populate flow layer dropdown with all layers whose renderType === 'flow'
+        const layerSelect = document.getElementById('flow-inp-layer');
+        if (layerSelect) {
+            layerSelect.innerHTML = '';
+            Object.entries(this.layerManager.layers).forEach(([id, layer]) => {
+                if (layer.renderType !== 'flow') return;
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = layer.name;
+                layerSelect.appendChild(opt);
+            });
+        }
         if (this.modal) this.modal.style.display = 'block';
     }
 
-    confirmPath(name, color, speed, shape, product, showLine) {
+    confirmPath(name, color, speed, shape, product, showLine, layerId) {
         if (!name.trim()) { alert('Please enter a path name.'); return; }
 
         const points = this.waypoints
@@ -60,7 +72,7 @@ export class FlowDrawer {
         if (!floor) { console.error('FlowDrawer: no active floor'); return; }
 
         const item = {
-            layerId:  'flow',
+            layerId:  layerId || 'flow',
             name:     name.trim(),
             x:        Math.round(this.waypoints[0].x),
             y:        Math.round(this.waypoints[0].z),

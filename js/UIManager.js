@@ -23,7 +23,8 @@ export class UIManager {
 
     init() {
         this.leftPanel.init();
-        this.createCollapseButton();            // ← NEW
+        this.createCollapseButton();
+        this.createRightCollapseButton();
 
         window.addEventListener('floor-isolated', (e) => {
             if (this.rightPanel) {
@@ -77,6 +78,27 @@ export class UIManager {
     }
     renderLayerList() {
         this.leftPanel.renderList();
+    }
+
+    createRightCollapseButton() {
+        const PANEL_WIDTH = '300px';
+
+        const btn = document.createElement('button');
+        btn.id = 'btn-toggle-right';
+        btn.title = 'Toggle Details Panel';
+        btn.textContent = '▶';
+        document.body.appendChild(btn);
+
+        const panel = document.getElementById('panel-right');
+        let collapsed = false;
+
+        btn.addEventListener('click', () => {
+            collapsed = !collapsed;
+            panel.classList.toggle('collapsed', collapsed);
+            btn.textContent = collapsed ? '◀' : '▶';
+            btn.style.right  = collapsed ? '0px' : PANEL_WIDTH;
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 320);
+        });
     }
     // ─────────────────────────────────────────────────────────────────────────
 }

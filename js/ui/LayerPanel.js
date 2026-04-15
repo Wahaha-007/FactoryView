@@ -19,10 +19,10 @@ export class LayerPanel {
         if (!this.container.parentNode) return;
 
         const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'display:flex; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #444;';
+        wrapper.style.cssText = 'display:flex; gap:6px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #444;';
 
-        wrapper.appendChild(this.createBtn("All",  () => this.setAll(true)));
-        wrapper.appendChild(this.createBtn("None", () => this.setAll(false)));
+        wrapper.appendChild(this.createBtn("▼ Expand All",   () => this._setAllCollapsed(false)));
+        wrapper.appendChild(this.createBtn("▶ Collapse All", () => this._setAllCollapsed(true)));
 
         this.container.parentNode.insertBefore(wrapper, this.container);
     }
@@ -36,9 +36,9 @@ export class LayerPanel {
         return btn;
     }
 
-    setAll(visible) {
-        Object.keys(this.layerManager.layers).forEach(id => {
-            this.layerManager.toggleLayer(id, visible);
+    _setAllCollapsed(collapsed) {
+        Object.values(this.layerManager.layers).forEach(layer => {
+            this._collapsed.set(layer.group_name || 'Other', collapsed);
         });
         this.renderList();
     }

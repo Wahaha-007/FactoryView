@@ -30,13 +30,10 @@
         <button id="btn-settings" style="margin-bottom:4px; background:#333; color:#aaa; border:1px solid #555;">⚙ Settings</button>
         <div class="divider"></div>
         <h3>View Controls</h3>
-        <button id="btn-top">Reset Top View</button>
-        <button id="btn-pause-flow">⏸ Pause Flow</button>
-        <button id="btn-toggle-labels">Hide Labels</button>
-        <div class="hint">
-            Rotate: Arrows<br>
-            Pan: Right Click<br>
-            Zoom: Scroll
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <button id="btn-top"           title="Reset Top View"    style="width:auto; padding:8px 14px; font-size:1rem;">⊙</button>
+            <button id="btn-pause-flow"    title="Pause Flow"         style="width:auto; padding:8px 14px; font-size:1rem;">⏸</button>
+            <button id="btn-toggle-labels" title="Hide / Show Labels" style="width:auto; padding:8px 14px; font-size:1rem;">Aa</button>
         </div>
             <!-- ... existing content ... -->
         <div class="divider"></div>
@@ -142,6 +139,8 @@
     <!-- Flow Path Finish Modal -->
     <div id="flow-finish-modal" style="display:none; position:fixed; z-index:2000; background:#2a2a2a; border:1px solid #555; padding:18px; border-radius:6px; min-width:230px; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 4px 20px rgba(0,0,0,0.6);">
         <h3 style="margin:0 0 12px; color:#eee; font-size:1rem;">Save Flow Path</h3>
+        <label>Flow Layer:</label>
+        <select id="flow-inp-layer"></select>
         <label>Name:</label>
         <input type="text" id="flow-inp-name" autocomplete="off" placeholder="e.g. Stack→Tipping#1">
         <label>Color:</label>
@@ -182,8 +181,26 @@
     <!-- Settings Modal -->
     <div id="settings-modal" style="display:none; position:fixed; z-index:3000; background:#2a2a2a; border:1px solid #555; padding:20px; border-radius:6px; min-width:280px; max-width:340px; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 4px 24px rgba(0,0,0,0.7);">
         <h3 style="margin:0 0 14px; color:#eee; font-size:1rem;">Settings</h3>
+
+        <div style="color:#aaa; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px;">Startup Behaviour</div>
+        <label style="display:flex; align-items:center; gap:10px; padding:5px 2px; font-size:0.85rem; color:#ccc; cursor:pointer;">
+            <input type="checkbox" id="settings-flow-paused" style="width:auto; margin:0;">
+            Pause Flow on startup
+        </label>
+        <label style="display:flex; align-items:center; gap:10px; padding:5px 2px; margin-bottom:12px; font-size:0.85rem; color:#ccc; cursor:pointer;">
+            <input type="checkbox" id="settings-labels-hidden" style="width:auto; margin:0;">
+            Hide Labels on startup
+        </label>
+
+        <div style="color:#aaa; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px;">Floor Display</div>
+        <label style="display:flex; align-items:center; justify-content:space-between; padding:5px 2px; margin-bottom:14px; font-size:0.85rem; color:#ccc;">
+            Floor separation distance
+            <input type="number" id="settings-floor-gap" value="300" min="100" max="1000" step="50"
+                   style="width:70px; padding:4px; background:#333; border:1px solid #555; color:#fff; border-radius:3px; text-align:right;">
+        </label>
+
         <div style="color:#aaa; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px;">Visible layers at startup</div>
-        <div id="settings-layer-list" style="max-height:300px; overflow-y:auto; margin-bottom:14px;"></div>
+        <div id="settings-layer-list" style="max-height:220px; overflow-y:auto; margin-bottom:14px;"></div>
         <div style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
             <button id="settings-close" style="width:auto; background:#555;">Close</button>
             <button id="settings-save" style="width:auto; background:#00d2ff;">Save</button>

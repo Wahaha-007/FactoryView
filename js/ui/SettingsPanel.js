@@ -47,6 +47,14 @@ export class SettingsPanel {
         const settings = SettingsPanel.load();
         const startupVisible = settings.startupVisible || {};
 
+        // Populate non-layer settings
+        const cbFlow   = document.getElementById('settings-flow-paused');
+        const cbLabels = document.getElementById('settings-labels-hidden');
+        const inpGap   = document.getElementById('settings-floor-gap');
+        if (cbFlow)   cbFlow.checked   = !!settings.startupFlowPaused;
+        if (cbLabels) cbLabels.checked = !!settings.startupLabelsHidden;
+        if (inpGap)   inpGap.value     = settings.floorGap || 300;
+
         this.listEl.innerHTML = '';
         Object.keys(this.layerManager.layers).forEach(id => {
             const layer = this.layerManager.layers[id];
@@ -81,7 +89,12 @@ export class SettingsPanel {
         this.listEl.querySelectorAll('input[type=checkbox]').forEach(cb => {
             startupVisible[cb.dataset.layerId] = cb.checked;
         });
-        SettingsPanel.save({ startupVisible });
+        SettingsPanel.save({
+            startupVisible,
+            startupFlowPaused:  !!(document.getElementById('settings-flow-paused')?.checked),
+            startupLabelsHidden: !!(document.getElementById('settings-labels-hidden')?.checked),
+            floorGap: parseInt(document.getElementById('settings-floor-gap')?.value) || 300
+        });
         this._close();
     }
 

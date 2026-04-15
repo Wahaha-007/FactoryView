@@ -72,13 +72,14 @@ export class EditorManager {
         const btnFlowConfirm = document.getElementById('flow-finish-confirm');
         if (btnFlowConfirm) {
             btnFlowConfirm.addEventListener('click', () => {
+                const layerId  = document.getElementById('flow-inp-layer')?.value;
                 const name     = document.getElementById('flow-inp-name').value;
                 const color    = document.getElementById('flow-inp-color').value;
                 const speed    = document.getElementById('flow-inp-speed').value;
                 const shape    = document.getElementById('flow-inp-shape').value;
                 const product  = document.getElementById('flow-inp-product').value;
                 const showLine = document.getElementById('flow-inp-showline').checked;
-                this.flowDrawer.confirmPath(name, color, speed, shape, product, showLine);
+                this.flowDrawer.confirmPath(name, color, speed, shape, product, showLine, layerId);
                 this._resetDrawFlowButton();
             });
         }

@@ -43,7 +43,11 @@ export class Application {
             await this.layerManager.preloadModels();
             console.log("Models Ready.");
 
-            // 3. Init Floor Manager
+            // 3. Init Floor Manager (apply saved floor gap before loading)
+            const startupSettings = SettingsPanel.load();
+            if (startupSettings.floorGap) {
+                this.floorManager.FLOOR_GAP = startupSettings.floorGap;
+            }
             this.floorManager.init(config.floors);
 
             // 4. Init UI
@@ -65,6 +69,18 @@ export class Application {
             // Sync layer-panel checkboxes with the visibility just applied
             this.uiManager.renderLayerList();
 
+            // Apply startup state settings (pause flow, hide labels)
+            if (startupSettings.startupFlowPaused) {
+                this.layerManager.toggleFlowPause();
+                const btn = document.getElementById('btn-pause-flow');
+                if (btn) { btn.textContent = '▶'; btn.title = 'Resume Flow'; btn.style.background = '#28a745'; }
+            }
+            if (startupSettings.startupLabelsHidden) {
+                this.layerManager.toggleLabels();
+                const btn = document.getElementById('btn-toggle-labels');
+                if (btn) btn.title = 'Show Labels';
+            }
+
             // 7. Bind Global Events
             this.bindEvents();
 
@@ -84,7 +100,8 @@ export class Application {
             btnPause.addEventListener('click', () => {
                 this.layerManager.toggleFlowPause();
                 const paused = this.layerManager._flowPaused;
-                btnPause.textContent   = paused ? '▶ Resume Flow' : '⏸ Pause Flow';
+                btnPause.textContent      = paused ? '▶' : '⏸';
+                btnPause.title            = paused ? 'Resume Flow' : 'Pause Flow';
                 btnPause.style.background = paused ? '#28a745' : '';
             });
         }
@@ -94,7 +111,7 @@ export class Application {
         if (btnLabels) {
             btnLabels.addEventListener('click', () => {
                 const visible = this.layerManager.toggleLabels();
-                btnLabels.textContent = visible ? 'Hide Labels' : 'Show Labels';
+                btnLabels.title = visible ? 'Hide Labels' : 'Show Labels';
             });
         }
 

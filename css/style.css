@@ -93,7 +93,37 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 10;
+    overflow: hidden;
+    transition: width 0.3s ease;
 }
+
+#panel-right.collapsed {
+    width: 0;
+    border-left: none;
+}
+
+#btn-toggle-right {
+    position: fixed;
+    right: 300px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 52px;
+    padding: 0;
+    background: #3a3a3a;
+    color: #aaa;
+    border: 1px solid #555;
+    border-right: none;
+    border-radius: 5px 0 0 5px;
+    font-size: 9px;
+    cursor: pointer;
+    z-index: 50;
+    transition: right 0.3s ease, background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#btn-toggle-right:hover { background: #555; color: #fff; }
 
 #panel-right-top {
     height: 55%;
@@ -268,46 +298,7 @@ button:hover { background: #555; }
     color: #88ff88; font-size: 0.8rem; margin-top: 5px;
 }
 
-/* Add to section 2 — inside #panel-left */
-#panel-left {
-    /* ADD these two lines to the existing rule: */
-    overflow: hidden;
-    transition: width 0.3s ease, padding 0.3s ease;
-}
 
-/* NEW: collapsed state */
-#panel-left.collapsed {
-    width: 0;
-    padding: 0;
-    border-right: none;
-}
-
-/* NEW: toggle tab button */
-#btn-toggle-left {
-    position: fixed;
-    left: 250px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 52px;
-    padding: 0;
-    background: #3a3a3a;
-    color: #aaa;
-    border: 1px solid #555;
-    border-left: none;
-    border-radius: 0 5px 5px 0;
-    font-size: 9px;
-    cursor: pointer;
-    z-index: 50;
-    transition: left 0.3s ease, background 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-#btn-toggle-left:hover {
-    background: #555;
-    color: #fff;
-}
 #coord-display {
     position: absolute;
     bottom: 12px;
