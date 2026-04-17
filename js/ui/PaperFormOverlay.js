@@ -46,8 +46,8 @@ export class PaperFormOverlay {
             schemaEl.appendChild(chip);
         });
 
-        document.getElementById('paper-overlay-iframe').src =
-            item.document ? `${item.document}#toolbar=0` : '';
+        const docUrl = item.document ? item.document.replace(/^assets\/docs\//, '/api/docs/') : '';
+        document.getElementById('paper-overlay-iframe').src = docUrl ? `${docUrl}#toolbar=0` : '';
 
         this._reposition();
         this.el.style.display = 'flex';

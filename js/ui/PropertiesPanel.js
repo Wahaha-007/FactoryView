@@ -101,7 +101,7 @@ export class PropertiesPanel {
         // --- Document link ---
         const docHTML = item.document
             ? `<div style="margin-bottom:10px;">
-                 <a href="${item.document}" target="_blank" rel="noopener"
+                 <a href="${item.document.replace(/^assets\/docs\//, '/api/docs/')}" target="_blank" rel="noopener"
                     style="display:block; padding:8px 12px; background:#1a3a4a; color:#00d2ff;
                            border:1px solid #00d2ff55; border-radius:4px; text-align:center;
                            text-decoration:none; font-size:0.85rem;">

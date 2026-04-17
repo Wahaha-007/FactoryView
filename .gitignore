@@ -1,2 +1,4 @@
 /tmp
 *.pdf
+upload-pdfs.js
+node_modules/
