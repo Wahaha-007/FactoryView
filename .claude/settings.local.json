@@ -5,7 +5,25 @@
       "Bash(python -)",
       "Bash(python -c ':*)",
       "Bash(ls assets/*.xlsx)",
-      "Bash(ls assets/~*)"
+      "Bash(ls assets/~*)",
+      "Bash(ls *.pdf)",
+      "Bash(ls assets/*.pdf)",
+      "Bash(mkdir -p assets/docs)",
+      "Bash(mv \"1000381996+1000381979_POUCH.pdf\" \"assets/docs/\")",
+      "Bash(mv \"1000391098+5000006870_CAN.pdf\" \"assets/docs/\")",
+      "Bash(mv \"Can Process - SD032927-9.0-HACCP Study Chonburi Plant.pdf\" \"assets/docs/\")",
+      "Bash(mv \"Pouch Process - SD032927-9.0-HACCP Study Chonburi Plant.pdf\" \"assets/docs/\")",
+      "Bash(python3 -c \"import openpyxl; print\\('openpyxl available'\\)\")",
+      "Bash(python -c \"import openpyxl; print\\('openpyxl available'\\)\")",
+      "Bash(python update_excel.py)",
+      "Bash(python3)",
+      "Bash(python -c \"import openpyxl; wb = openpyxl.load_workbook\\('assets/floor_1_data.xlsx'\\); print\\(wb.sheetnames\\)\")",
+      "Bash(python)",
+      "Bash(python update_paper_meta.py)",
+      "Bash(python add_mark_col.py)",
+      "Bash(rm add_mark_col.py)",
+      "Bash(python -c \"import openpyxl; wb=openpyxl.load_workbook\\('assets/floor_1_data.xlsx'\\); print\\(wb.sheetnames\\)\")",
+      "Bash(python -c ' *)"
     ]
   }
 }
