@@ -24,7 +24,7 @@ function getCookieValue(cookieHeader, name) {
   return null;
 }
 
-async function computeExpectedToken(secret) {
+async function computeExpectedToken(secret, role) {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw',
@@ -33,7 +33,7 @@ async function computeExpectedToken(secret) {
     false,
     ['sign']
   );
-  const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode('authenticated'));
+  const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(role));
   return Array.from(new Uint8Array(sigBuf))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
@@ -70,7 +70,12 @@ export default async function middleware(request) {
     return Response.redirect(new URL('/login.html', request.url), 302);
   }
 
-  const expected = await computeExpectedToken(secret);
+  // Extract role from auth_role cookie; fall back to 'viewer' if missing/invalid
+  const validRoles = ['admin', 'editor', 'viewer'];
+  const roleCookie = getCookieValue(cookieHeader, 'auth_role') || '';
+  const role = validRoles.includes(roleCookie) ? roleCookie : 'viewer';
+
+  const expected = await computeExpectedToken(secret, role);
 
   if (!timingSafeEqual(token, expected)) {
     return Response.redirect(new URL('/login.html', request.url), 302);

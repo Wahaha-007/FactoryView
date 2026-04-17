@@ -67,8 +67,12 @@ export class LayerManager {
         }
     }
 
-    initFromConfig(configLayers, configTypes) {
+    initFromConfig(configLayers, configTypes, currentRole = 'admin') {
         configLayers.forEach(cfg => {
+            if (cfg.ViewRoles) {
+                const allowed = cfg.ViewRoles.split(',').map(r => r.trim().toLowerCase());
+                if (!allowed.includes(currentRole)) return;
+            }
             const isVisible = (cfg.RenderType === 'area' || cfg.RenderType === 'flow') ? true : (cfg.id === 'it_dev');
             this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon, cfg.RenderType);
             this.layers[cfg.id].group_name = cfg.Group || 'Other';
@@ -430,6 +434,11 @@ export class LayerManager {
                         const current = this.activeFloorId;
                         if (!current || fd === current || !fd || fd === 'global') return;
                         child.visible = false;
+                        // CSS2DRenderer uses traverseVisible() so it never visits children
+                        // of hidden objects — explicitly hide the label DOM element so it
+                        // cannot receive pointer events or appear on top of other floors.
+                        const lbl = child.children.find(c => c.isCSS2DObject);
+                        if (lbl) { lbl.visible = false; lbl.element.style.display = 'none'; }
                     }
                 });
             });
@@ -467,16 +476,18 @@ export class LayerManager {
         // 2. Fade CSS Label
         const label = child.children.find(c => c.isCSS2DObject);
         if (label) {
-            // CSS objects opacity must be handled via DOM
             if (targetOpacity === 0) {
-                // Fade out then hide
+                // Disable pointer events immediately — CSS2DRenderer won't set display:none
+                // on labels inside hidden meshes, so clicks would still fire on opacity-0 labels
+                label.element.style.pointerEvents = 'none';
                 label.element.style.transition = `opacity ${duration}ms`;
                 label.element.style.opacity = 0;
             } else {
-                // Show then fade in — only if labels are globally enabled
+                // Restore display and pointer events before fading in
+                label.element.style.display = '';
+                label.element.style.pointerEvents = '';
                 label.visible = this._labelsVisible;
-                // Force reflow
-                label.element.offsetHeight;
+                label.element.offsetHeight; // force reflow
                 label.element.style.transition = `opacity ${duration}ms`;
                 label.element.style.opacity = this._labelsVisible ? 1 : 0;
             }

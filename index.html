@@ -28,6 +28,7 @@
         </div>
         
         <button id="btn-settings" style="margin-bottom:4px; background:#333; color:#aaa; border:1px solid #555;">⚙ Settings</button>
+        <button id="btn-users" style="display:none; margin-bottom:4px; background:#333; color:#aaa; border:1px solid #555;">👥 Users</button>
         <div class="divider"></div>
         <h3>View Controls</h3>
         <div style="display:flex; gap:6px; margin-bottom:8px;">
@@ -225,6 +226,41 @@
         <div style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
             <button id="settings-close" style="width:auto; background:#555;">Close</button>
             <button id="settings-save" style="width:auto; background:#00d2ff;">Save</button>
+        </div>
+    </div>
+
+    <!-- Users Modal (admin only) -->
+    <div id="users-modal" style="display:none; position:fixed; z-index:3000; background:#2a2a2a; border:1px solid #555; padding:20px; border-radius:6px; min-width:320px; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 4px 24px rgba(0,0,0,0.7);">
+        <h3 style="margin:0 0 14px; color:#eee; font-size:1rem;">User Accounts</h3>
+        <table style="width:100%; border-collapse:collapse; font-size:0.85rem; color:#ccc;">
+            <thead>
+                <tr style="color:#777; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px solid #444;">
+                    <th style="text-align:left; padding:6px 8px;">Username</th>
+                    <th style="text-align:left; padding:6px 8px;">Role</th>
+                    <th style="text-align:left; padding:6px 8px;">Permissions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom:1px solid #333;">
+                    <td style="padding:8px;">admin</td>
+                    <td style="padding:8px;"><span style="color:#00d2ff;">Admin</span></td>
+                    <td style="padding:8px; color:#888;">Full access + user panel</td>
+                </tr>
+                <tr style="border-bottom:1px solid #333;">
+                    <td style="padding:8px;">editor</td>
+                    <td style="padding:8px;"><span style="color:#f0a500;">Editor</span></td>
+                    <td style="padding:8px; color:#888;">View + edit + export</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px;">viewer</td>
+                    <td style="padding:8px;"><span style="color:#aaa;">Viewer</span></td>
+                    <td style="padding:8px; color:#888;">View only (layer-restricted)</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="color:#555; font-size:0.75rem; margin:12px 0 14px;">Passwords are configured as environment variables on the server. Layer access per role is set via the <em>ViewRoles</em> column in system_config.xlsx.</p>
+        <div style="text-align:right;">
+            <button id="users-close" style="width:auto; background:#555;">Close</button>
         </div>
     </div>
 

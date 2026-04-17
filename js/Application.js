@@ -10,6 +10,7 @@ import { DataLoader } from './DataLoader.js';
 import { EditorManager } from './EditorManager.js';
 import { SettingsPanel } from './ui/SettingsPanel.js';
 import { PaperFormOverlay } from './ui/PaperFormOverlay.js';
+import { RoleManager } from './ui/RoleManager.js';
 
 export class Application {
     constructor() {
@@ -26,6 +27,7 @@ export class Application {
         this.editorManager = new EditorManager(this.layerManager, this.inputManager, this.cameraManager, this.floorManager);
         this.settingsPanel = new SettingsPanel(this.layerManager);
         this.paperOverlay = new PaperFormOverlay();
+        this.roleManager = new RoleManager();
 
         // Bind the animate loop to 'this' context
         this.animate = this.animate.bind(this);
@@ -39,7 +41,7 @@ export class Application {
             const config = await this.dataLoader.loadSystemConfig('assets/system_config.xlsx');
 
             // 2. Setup Layers & Preload Assets
-            this.layerManager.initFromConfig(config.layers, config.types);
+            this.layerManager.initFromConfig(config.layers, config.types, this.roleManager.getRole());
             
             console.log("Preloading 3D Models...");
             await this.layerManager.preloadModels();
@@ -54,6 +56,7 @@ export class Application {
 
             // 4. Init UI
             this.uiManager.init();
+            this.roleManager.init();
 
             // 5. Load The Digital Twin (Floors & Items)
             if (config.floors.length > 0) {

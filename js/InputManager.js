@@ -68,6 +68,7 @@ export class InputManager extends EventTarget {
         Object.values(this.layerManager.layers).forEach(layer => {
             if (layer.renderType !== 'flow' || !layer.visible) return;
             layer.group.children.forEach(visual => {
+                if (!visual.visible) return; // skip floor-filtered visuals
                 if (visual._flowHitMesh) {
                     hitMeshes.push(visual._flowHitMesh);
                     meshToVisual.set(visual._flowHitMesh, visual);
