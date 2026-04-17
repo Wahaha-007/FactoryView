@@ -30,9 +30,11 @@ module.exports = async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // 2. Sanitize path
-    const segments = req.query.path || [];
-    const relPath  = (Array.isArray(segments) ? segments : [segments]).join('/');
+    // 2. Extract and sanitize path from URL
+    const relPath = decodeURIComponent(req.url)
+        .replace(/^\/api\/docs\//, '')
+        .split('?')[0];
+
     if (!relPath || relPath.includes('..')) {
         return res.status(400).json({ error: 'Invalid path' });
     }
