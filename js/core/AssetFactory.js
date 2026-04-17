@@ -78,7 +78,7 @@ export class AssetFactory {
         }
         // B. Procedural Geometry
         else {
-            mesh = this.createProceduralMesh(modelId, color);
+            mesh = this.createProceduralMesh(modelId, color, item);
         }
 
         // Attach Data
@@ -96,7 +96,7 @@ export class AssetFactory {
         return mesh;
     }
 
-    createProceduralMesh(modelId, color) {
+    createProceduralMesh(modelId, color, item = null) {
         let geometry;
         // Ensure standard material handles transparency for fading
         const material = new THREE.MeshStandardMaterial({
@@ -142,9 +142,36 @@ export class AssetFactory {
                 geometry = new THREE.BoxGeometry(15, 40, 35);
                 geometry.translate(0, 20, 0); break;
 
-            case 'paper':
-                geometry = new THREE.BoxGeometry(15, 40, 5);
-                geometry.translate(0, 20, 0); break;
+            case 'paper': {
+                const geo = new THREE.BoxGeometry(15, 40, 5);
+                geo.translate(0, 20, 0);
+                const faceChar = (item?.extras?.Mark || '').toString().trim().charAt(0);
+                if (faceChar) {
+                    // Canvas texture for front (+z) and back (-z) faces
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 64; canvas.height = 128;
+                    const ctx = canvas.getContext('2d');
+                    // Background: the item/layer color
+                    ctx.fillStyle = '#' + color.getHexString();
+                    ctx.fillRect(0, 0, 64, 128);
+                    // Character: white fill with black stroke for readability on any background
+                    ctx.font = 'bold 52px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 6;
+                    ctx.lineJoin = 'round';
+                    ctx.strokeText(faceChar, 32, 68);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(faceChar, 32, 68);
+                    const tex = new THREE.CanvasTexture(canvas);
+                    const faceMat = new THREE.MeshStandardMaterial({ map: tex, transparent: true });
+                    // BoxGeometry material order: +x, -x, +y, -y, +z (front), -z (back)
+                    return new THREE.Mesh(geo, [material, material, material, material, faceMat, faceMat]);
+                }
+                geometry = geo;
+                break;
+            }
 
             case 'monitor':
                 const groupMon = new THREE.Group();

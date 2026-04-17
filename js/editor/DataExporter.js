@@ -43,7 +43,8 @@ export class DataExporter {
                         Tension:  item.tension  != null ? item.tension  : 0.5,
                         Shape:    item.shape    || '',
                         ShowLine: item.showLine != null ? item.showLine : true,
-                        Product:  item.product  || ''
+                        Product:  item.product  || '',
+                        Document: item.document || ''
                     }))
                     : renderType === 'area'
                     ? items.map(item => {
@@ -72,7 +73,9 @@ export class DataExporter {
                         Description: item.desc   || "",
                         Status:      item.status  || "Active",
                         LastAudit:   item.lastAudit || "",
-                        Color:       item.color   || ""
+                        Color:       item.color   || "",
+                        Document:    item.document || "",
+                        ...(item.extras || {})
                     }));
 
                 const ws = XLSX.utils.json_to_sheet(excelRows);

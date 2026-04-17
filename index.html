@@ -70,6 +70,27 @@
     <!-- CENTER: 3D Canvas -->
     <div id="canvas-container">
         <div id="coord-display" style="display:none;">X: — &nbsp; Y: —</div>
+
+        <!-- Paper Form Overlay -->
+        <div id="paper-overlay" style="display:none;">
+            <div id="paper-overlay-header">
+                <span>📄</span>
+                <span id="paper-overlay-title"></span>
+                <button id="paper-overlay-close" title="Close (Esc)">✕</button>
+            </div>
+            <div id="paper-overlay-body">
+                <div id="paper-overlay-meta">
+                    <div class="po-section-label">Form Metadata</div>
+                    <div class="po-row"><span class="po-key">Frequency</span><span id="po-frequency"></span></div>
+                    <div class="po-row"><span class="po-key">Type</span><span id="po-formtype"></span></div>
+                    <div class="po-row"><span class="po-key">Recorded by</span><span id="po-recordedby"></span></div>
+                    <div class="po-row"><span class="po-key">Purpose</span><span id="po-purpose" class="po-purpose"></span></div>
+                    <div class="po-section-label" style="margin-top:14px;">Data Fields</div>
+                    <div id="po-schema"></div>
+                </div>
+                <iframe id="paper-overlay-iframe" src="" frameborder="0"></iframe>
+            </div>
+        </div>
     </div>
 
     <!-- RIGHT PANEL: Device List & Details -->

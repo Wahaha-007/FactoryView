@@ -9,6 +9,7 @@ import { UIManager } from './UIManager.js';
 import { DataLoader } from './DataLoader.js';
 import { EditorManager } from './EditorManager.js';
 import { SettingsPanel } from './ui/SettingsPanel.js';
+import { PaperFormOverlay } from './ui/PaperFormOverlay.js';
 
 export class Application {
     constructor() {
@@ -24,6 +25,7 @@ export class Application {
         this.uiManager = new UIManager(this.layerManager, this.floorManager);
         this.editorManager = new EditorManager(this.layerManager, this.inputManager, this.cameraManager, this.floorManager);
         this.settingsPanel = new SettingsPanel(this.layerManager);
+        this.paperOverlay = new PaperFormOverlay();
 
         // Bind the animate loop to 'this' context
         this.animate = this.animate.bind(this);
@@ -65,6 +67,7 @@ export class Application {
             // 6. Init Editor & Settings
             this.editorManager.init();
             this.settingsPanel.init();
+            this.paperOverlay.init();
             this.settingsPanel.applyStartupVisibility();
             // Sync layer-panel checkboxes with the visibility just applied
             this.uiManager.renderLayerList();
@@ -129,6 +132,9 @@ export class Application {
         // UI: Item Clicked in 3D (Select in Right Panel)
         window.addEventListener('item-clicked', (e) => {
             const item = e.detail;
+            if (this.layerManager.typeToModelMap[item.type] === 'paper' && item.document) {
+                this.paperOverlay.show(item);
+            }
             this.uiManager.selectItemFrom3D(item.layerId, item);
             this.layerManager.highlightItem(item);
         });

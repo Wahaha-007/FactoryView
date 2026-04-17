@@ -334,3 +334,74 @@ button:hover { background: #555; }
 .layer-group-header:hover { color: #fff; }
 .layer-group-arrow { font-size: 0.6rem; }
 .layer-group-body { padding-left: 6px; }
+
+/* =========================================
+   8. PAPER FORM OVERLAY
+   ========================================= */
+#paper-overlay {
+    position: fixed;
+    /* left/top/right/bottom set dynamically in PaperFormOverlay.js */
+    background: #1e1e1eee;
+    border: 1px solid #444;
+    border-radius: 6px;
+    flex-direction: column;
+    z-index: 4000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+    overflow: hidden;
+}
+#paper-overlay-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #252525;
+    border-bottom: 1px solid #444;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #eee;
+    flex-shrink: 0;
+}
+#paper-overlay-header #paper-overlay-close {
+    margin-left: auto;
+    width: auto;
+    padding: 2px 10px;
+    background: #555;
+    font-size: 1rem;
+    border-radius: 4px;
+}
+#paper-overlay-header #paper-overlay-close:hover { background: #d9534f; color: #fff; }
+#paper-overlay-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+#paper-overlay-meta {
+    width: 30%;
+    min-width: 200px;
+    padding: 16px;
+    overflow-y: auto;
+    border-right: 1px solid #333;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+.po-section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #777;
+    margin-bottom: 8px;
+}
+.po-row { display: flex; flex-direction: column; margin-bottom: 12px; }
+.po-key { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.po-purpose { color: #bbb; line-height: 1.5; }
+.po-chip {
+    display: inline-block;
+    background: #1a3a3a;
+    color: #00d2ff;
+    border: 1px solid #00d2ff44;
+    border-radius: 3px;
+    padding: 2px 7px;
+    margin: 3px 3px 3px 0;
+    font-size: 0.78rem;
+}
+#paper-overlay-iframe { flex: 1; border: none; background: #fff; }

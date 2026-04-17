@@ -98,6 +98,18 @@ export class PropertiesPanel {
             return;
         }
 
+        // --- Document link ---
+        const docHTML = item.document
+            ? `<div style="margin-bottom:10px;">
+                 <a href="${item.document}" target="_blank" rel="noopener"
+                    style="display:block; padding:8px 12px; background:#1a3a4a; color:#00d2ff;
+                           border:1px solid #00d2ff55; border-radius:4px; text-align:center;
+                           text-decoration:none; font-size:0.85rem;">
+                     📄 View Document
+                 </a>
+               </div>`
+            : '';
+
         // --- Audit row ---
         const auditInfo = this.checkAudit(item.lastAudit);
         const auditHTML = auditInfo.overdue
@@ -127,6 +139,7 @@ export class PropertiesPanel {
         // ← No <h3> name here anymore
         this.detailsContainer.innerHTML = `
             <div style="font-size:0.9rem; line-height:1.8;">
+                ${docHTML}
                 <div><strong>Type:</strong> ${item.type || 'N/A'}</div>
                 <div><strong>Status:</strong>
                     <span style="color:${item.status === 'Inactive' ? '#f44' : '#4f4'}">
