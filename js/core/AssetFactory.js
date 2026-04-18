@@ -377,6 +377,20 @@ export class AssetFactory {
                 return g;
             }
 
+            case 'milk_cans': {
+                // Flat pallet carrying 4 milk cans (tapered cylinders) in a 2×2 arrangement
+                const g = new THREE.Group();
+                const base = withEdges(new THREE.Mesh(new THREE.BoxGeometry(33, 4.5, 22.5), mat));
+                base.position.y = 2.25;
+                g.add(base);
+                [[-8.25, -5.25], [8.25, -5.25], [-8.25, 5.25], [8.25, 5.25]].forEach(([bx, bz]) => {
+                    const can = withEdges(new THREE.Mesh(new THREE.CylinderGeometry(3.5, 4.5, 14, 12), mat));
+                    can.position.set(bx, 11.5, bz);
+                    g.add(can);
+                });
+                return g;
+            }
+
             case 'human': {
                 // Stylised human figure: head + body + arms + legs
                 const g = new THREE.Group();
