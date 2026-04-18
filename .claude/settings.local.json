@@ -23,7 +23,14 @@
       "Bash(python add_mark_col.py)",
       "Bash(rm add_mark_col.py)",
       "Bash(python -c \"import openpyxl; wb=openpyxl.load_workbook\\('assets/floor_1_data.xlsx'\\); print\\(wb.sheetnames\\)\")",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(unzip -p floor_1_data.xlsx xl/worksheets/sheet1.xml)",
+      "Bash(unzip -p floor_1_data.xlsx xl/sharedStrings.xml)",
+      "Bash(unzip -p system_config.xlsx xl/sharedStrings.xml)",
+      "Bash(unzip -l system_config.xlsx)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

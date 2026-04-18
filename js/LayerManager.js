@@ -88,12 +88,28 @@ export class LayerManager {
                             item.name;
             const el = child.element;
 
-            // Spin-flip animation: scale to 0 mid-way, swap text, scale back
-            el.style.transition = 'none';
-            el.style.animation  = 'none';
-            void el.offsetWidth; // force reflow
-            el.style.animation  = 'label-flip 0.35s ease';
-            setTimeout(() => { el.textContent = newText; }, 140);
+            // Lazily wrap the text node in an inner span so the animation
+            // transform doesn't conflict with CSS2DRenderer's outer positioning transform
+            let textSpan = el.querySelector('.label-inner');
+            if (!textSpan) {
+                const textNode = Array.from(el.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+                if (textNode) {
+                    textSpan = document.createElement('span');
+                    textSpan.className = 'label-inner';
+                    textSpan.style.display = 'inline-block';
+                    textSpan.textContent = textNode.textContent;
+                    el.replaceChild(textSpan, textNode);
+                }
+            }
+
+            if (textSpan) {
+                textSpan.style.animation = 'none';
+                void textSpan.offsetWidth;
+                textSpan.style.animation = 'label-flip 0.35s ease';
+                setTimeout(() => { textSpan.textContent = newText; }, 140);
+            } else {
+                el.lastChild.textContent = newText;
+            }
         });
 
         return next;
