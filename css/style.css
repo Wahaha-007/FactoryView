@@ -39,10 +39,14 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 10;
-    overflow: hidden;                          /* ← needed for smooth collapse */
+    overflow-x: hidden;                        /* ← needed for smooth collapse */
+    overflow-y: auto;
+    scrollbar-width: none;                     /* Firefox */
     transition: width 0.3s ease,
                 padding 0.3s ease;             /* ← smooth slide */
 }
+
+#panel-left::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
 /* Collapsed state — toggled by JS */
 #panel-left.collapsed {
@@ -405,3 +409,49 @@ button:hover { background: #555; }
     font-size: 0.78rem;
 }
 #paper-overlay-iframe { flex: 1; border: none; background: #fff; }
+
+/* --- Scene Preset Buttons --- */
+#scene-presets {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    z-index: 100;
+    pointer-events: auto;
+}
+.preset-btn {
+    min-width: 52px;
+    height: 28px;
+    padding: 0 7px;
+    font-size: 0.72rem;
+    font-family: 'Segoe UI', sans-serif;
+    background: rgba(20, 20, 20, 0.82);
+    border: 1px solid #555;
+    color: #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+}
+.preset-btn:hover:not(:disabled) {
+    background: rgba(0, 180, 220, 0.25);
+    border-color: #00d2ff;
+    color: #fff;
+}
+.preset-btn-empty { opacity: 0.25; cursor: default; }
+#btn-capture-preset {
+    height: 28px;
+    width: 30px;
+    font-size: 0.82rem;
+    background: rgba(20, 20, 20, 0.82);
+    border: 1px solid #555;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 4px;
+    transition: background 0.15s;
+}
+#btn-capture-preset:hover { background: rgba(80, 80, 80, 0.9); }

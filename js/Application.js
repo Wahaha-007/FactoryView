@@ -11,6 +11,7 @@ import { EditorManager } from './EditorManager.js';
 import { SettingsPanel } from './ui/SettingsPanel.js';
 import { PaperFormOverlay } from './ui/PaperFormOverlay.js';
 import { RoleManager } from './ui/RoleManager.js';
+import { ScenePresetsPanel } from './ui/ScenePresetsPanel.js';
 
 export class Application {
     constructor() {
@@ -28,6 +29,10 @@ export class Application {
         this.settingsPanel = new SettingsPanel(this.layerManager);
         this.paperOverlay = new PaperFormOverlay();
         this.roleManager = new RoleManager();
+        this.scenePresetsPanel = new ScenePresetsPanel(
+            this.cameraManager, this.layerManager, this.floorManager,
+            this.dataLoader, this.roleManager
+        );
 
         // Bind the animate loop to 'this' context
         this.animate = this.animate.bind(this);
@@ -57,6 +62,7 @@ export class Application {
             // 4. Init UI
             this.uiManager.init();
             this.roleManager.init();
+            await this.scenePresetsPanel.init();
 
             // 5. Load The Digital Twin (Floors & Items)
             if (config.floors.length > 0) {

@@ -1,6 +1,13 @@
 export class DataLoader {
     constructor() {}
 
+    async loadPresets(url) {
+        try {
+            const wb = await this.fetchWorkbook(url);
+            return wb.Sheets['Presets'] ? XLSX.utils.sheet_to_json(wb.Sheets['Presets']) : [];
+        } catch { return []; }
+    }
+
     async loadSystemConfig(url) {
         try {
             const workbook = await this.fetchWorkbook(url);
