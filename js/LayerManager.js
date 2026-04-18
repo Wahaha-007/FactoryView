@@ -25,6 +25,9 @@ export class LayerManager {
 
         // Label visibility toggle
         this._labelsVisible   = true;
+
+        // Per-layer label-cycle mode: 0=Name, 1=Name1, 2=Name2
+        this._labelModes = {};
     }
 
     toggleLabels() {
@@ -55,6 +58,45 @@ export class LayerManager {
             }
         });
         return this._labelsVisible;
+    }
+
+    hasAlternateLabels(layerId) {
+        const layer = this.layers[layerId];
+        if (!layer?.items?.length) return false;
+        return layer.items.some(item => item.name1 || item.name2);
+    }
+
+    cycleLabelMode(layerId) {
+        const layer = this.layers[layerId];
+        if (!layer) return;
+
+        const hasName1 = layer.items.some(i => i.name1);
+        const hasName2 = layer.items.some(i => i.name2);
+        const maxMode  = hasName2 ? 2 : hasName1 ? 1 : 0;
+
+        const current = this._labelModes[layerId] ?? 0;
+        const next    = current >= maxMode ? 0 : current + 1;
+        this._labelModes[layerId] = next;
+
+        layer.group.traverse(child => {
+            if (!child.isCSS2DObject) return;
+            const item = child.userData.item;
+            if (!item) return;
+
+            const newText = next === 1 ? (item.name1 || item.name) :
+                            next === 2 ? (item.name2 || item.name) :
+                            item.name;
+            const el = child.element;
+
+            // Spin-flip animation: scale to 0 mid-way, swap text, scale back
+            el.style.transition = 'none';
+            el.style.animation  = 'none';
+            void el.offsetWidth; // force reflow
+            el.style.animation  = 'label-flip 0.35s ease';
+            setTimeout(() => { el.textContent = newText; }, 140);
+        });
+
+        return next;
     }
 
     toggleFlowPause() {
@@ -170,6 +212,7 @@ export class LayerManager {
 
             const label = visual.children.find(c => c.isCSS2DObject);
             if (label) {
+                label.userData.item = item;
                 label.element.onclick = (e) => {
                     e.stopPropagation();
                     window.dispatchEvent(new CustomEvent('item-clicked', { detail: item }));
@@ -204,19 +247,13 @@ export class LayerManager {
         // 3. Re-bind Click Event to include full item object
         // The factory adds a generic listener, but we want the full item data reference
         const label = visual.children.find(c => c.isCSS2DObject);
-        if(label) {
-             // We can't easily remove anonymous listeners from factory, 
-             // but we can ensure the factory dispatches a generic event 
-             // or we overwrite the element onclick here if we wanted strictly binding data.
-             // However, the factory dispatching 'item-clicked' with basic data is often enough.
-             // If you need the EXACT item reference passed to window, we do it here:
-             label.element.onclick = (e) => {
-                 e.stopPropagation();
-                 window.dispatchEvent(new CustomEvent('item-clicked', { detail: item }));
-             };
-             
-             // Sync initial visibility
-             label.visible = layer.visible;
+        if (label) {
+            label.userData.item = item;
+            label.element.onclick = (e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent('item-clicked', { detail: item }));
+            };
+            label.visible = layer.visible;
         }
 
         layer.group.add(visual);

@@ -105,6 +105,22 @@ export class LayerPanel {
                 row.appendChild(checkbox);
                 row.appendChild(dot);
                 row.appendChild(label);
+
+                // Cycle button — only for layers with Name1 / Name2 columns
+                if (this.layerManager.hasAlternateLabels(id)) {
+                    const modeLabels = ['N', 'N1', 'N2'];
+                    const cycleBtn = document.createElement('button');
+                    cycleBtn.className = 'label-cycle-btn';
+                    const currentMode = this.layerManager._labelModes[id] ?? 0;
+                    cycleBtn.textContent = modeLabels[currentMode];
+                    cycleBtn.title = 'Cycle label: Name → Name1 → Name2';
+                    cycleBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        const newMode = this.layerManager.cycleLabelMode(id);
+                        cycleBtn.textContent = modeLabels[newMode ?? 0];
+                    };
+                    row.appendChild(cycleBtn);
+                }
                 body.appendChild(row);
             });
 

@@ -455,3 +455,27 @@ button:hover { background: #555; }
     transition: background 0.15s;
 }
 #btn-capture-preset:hover { background: rgba(80, 80, 80, 0.9); }
+
+/* --- Label cycle button (form layers) --- */
+.label-cycle-btn {
+    margin-left: 6px;
+    padding: 1px 5px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    background: #1a3a3a;
+    color: #00d2ff;
+    border: 1px solid #00d2ff55;
+    border-radius: 3px;
+    cursor: pointer;
+    line-height: 1.4;
+    vertical-align: middle;
+    transition: background 0.15s;
+}
+.label-cycle-btn:hover { background: #0a5050; }
+
+@keyframes label-flip {
+    0%   { transform: scaleX(1); opacity: 1; }
+    40%  { transform: scaleX(0); opacity: 0; }
+    60%  { transform: scaleX(0); opacity: 0; }
+    100% { transform: scaleX(1); opacity: 1; }
+}
