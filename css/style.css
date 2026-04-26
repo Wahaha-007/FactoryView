@@ -417,12 +417,11 @@ button:hover { background: #555; }
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: row;
     gap: 5px;
     z-index: 100;
     pointer-events: auto;
-    max-width: 90vw;
+    white-space: nowrap;
 }
 .preset-btn {
     min-width: 52px;
