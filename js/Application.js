@@ -93,7 +93,13 @@ export class Application {
                 if (btn) btn.title = 'Show Labels';
             }
 
-            // 7. Bind Global Events
+            // 7. Apply startup preset (id=1 overrides settings-based startup state)
+            const startupPreset = this.scenePresetsPanel.presets.find(p => Number(p.id) === 1);
+            if (startupPreset) {
+                this.scenePresetsPanel.applyPreset(startupPreset);
+            }
+
+            // 8. Bind Global Events
             this.bindEvents();
 
             // 8. Start Loop

@@ -19,7 +19,7 @@ export class ScenePresetsPanel {
         const wrap = document.createElement('div');
         wrap.id = 'scene-presets';
 
-        for (let i = 1; i <= 8; i++) {
+        for (let i = 1; i <= 16; i++) {
             const preset = this.presets.find(p => Number(p.id) === i);
             const btn = document.createElement('button');
             btn.className = preset ? 'preset-btn' : 'preset-btn preset-btn-empty';
@@ -41,6 +41,8 @@ export class ScenePresetsPanel {
 
         document.getElementById('canvas-container').appendChild(wrap);
     }
+
+    applyPreset(preset) { this._apply(preset); }
 
     _apply(preset) {
         // 1. Camera

@@ -30,6 +30,7 @@ export class UIManager {
             if (this.rightPanel) {
                 this.rightPanel.setFloorFilter(e.detail.floorId);
             }
+            this.elevator.updateState(e.detail.index);
             console.log('Send filter signal, Floor isolated:', e.detail.floorId);
         });
 
@@ -37,6 +38,7 @@ export class UIManager {
             if (this.rightPanel) {
                 this.rightPanel.setFloorFilter(null);
             }
+            this.elevator.updateState(-1);
         });
     }
 
