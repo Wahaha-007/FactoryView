@@ -50,10 +50,10 @@ export class ScenePresetsPanel {
         const tgt = new THREE.Vector3(Number(preset.tgt_x), Number(preset.tgt_y), Number(preset.tgt_z));
         this.cam.animateCamera(pos, tgt, 1000);
 
-        // 2. Floor
+        // 2. Floor (pass skipCamera=true so clearIsolation doesn't override the camera above)
         const fi = Number(preset.floor_index);
         if (fi === -1) {
-            this.fm.clearIsolation();
+            this.fm.clearIsolation(true);
         } else {
             this.fm.isolateFloor(fi);
         }

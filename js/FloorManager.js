@@ -153,7 +153,7 @@ export class FloorManager {
         }));
     }
 
-    clearIsolation() {
+    clearIsolation(skipCamera = false) {
         this.activeFloorIndex = -1;
         console.log("Restoring All Floors");
 
@@ -166,8 +166,8 @@ export class FloorManager {
         // 2. FADE Items Back In (Keep this!)
         this.layerManager.fadeAllItemsIn(1000);
 
-        // 3. Reset Camera
-        this.cameraManager.resetView();
+        // 3. Reset Camera (skip when caller supplies its own camera target)
+        if (!skipCamera) this.cameraManager.resetView();
 
         // 4. Notify System
         window.dispatchEvent(new CustomEvent('floor-restored'));
