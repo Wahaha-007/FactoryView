@@ -10,8 +10,10 @@ import { DataLoader } from './DataLoader.js';
 import { EditorManager } from './EditorManager.js';
 import { SettingsPanel } from './ui/SettingsPanel.js';
 import { PaperFormOverlay } from './ui/PaperFormOverlay.js';
+import { ItemPopup } from './ui/ItemPopup.js';
 import { RoleManager } from './ui/RoleManager.js';
 import { ScenePresetsPanel } from './ui/ScenePresetsPanel.js';
+import { AdminPanel } from './ui/AdminPanel.js';
 
 export class Application {
     constructor() {
@@ -28,6 +30,8 @@ export class Application {
         this.editorManager = new EditorManager(this.layerManager, this.inputManager, this.cameraManager, this.floorManager);
         this.settingsPanel = new SettingsPanel(this.layerManager);
         this.paperOverlay = new PaperFormOverlay();
+        this.itemPopup = new ItemPopup();
+        this.adminPanel = new AdminPanel();
         this.roleManager = new RoleManager();
         this.scenePresetsPanel = new ScenePresetsPanel(
             this.cameraManager, this.layerManager, this.floorManager,
@@ -43,6 +47,7 @@ export class Application {
             console.log("System Initializing...");
 
             // 1. Load Configuration
+            await this.dataLoader.fetchBlobBase();
             const config = await this.dataLoader.loadSystemConfig('assets/system_config.xlsx');
 
             // 2. Setup Layers & Preload Assets
@@ -77,6 +82,9 @@ export class Application {
             this.editorManager.init();
             this.settingsPanel.init();
             this.paperOverlay.init();
+            this.itemPopup.init();
+            const adminContainer = document.getElementById('admin-panel-body');
+            if (adminContainer) this.adminPanel.init(adminContainer);
             this.settingsPanel.applyStartupVisibility();
             // Sync layer-panel checkboxes with the visibility just applied
             this.uiManager.renderLayerList();
@@ -149,6 +157,8 @@ export class Application {
             const item = e.detail;
             if (this.layerManager.typeToModelMap[item.type] === 'paper' && item.document) {
                 this.paperOverlay.show(item);
+            } else if (this.layerManager.layers[item.layerId]?.popup) {
+                this.itemPopup.show(item);
             }
             this.uiManager.selectItemFrom3D(item.layerId, item);
             this.layerManager.highlightItem(item);

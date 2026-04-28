@@ -63,7 +63,27 @@ export class LayerManager {
     hasAlternateLabels(layerId) {
         const layer = this.layers[layerId];
         if (!layer?.items?.length) return false;
-        return layer.items.some(item => item.name1 || item.name2);
+        return layer.items.some(item => item.name1 || item.name2 || item.name3);
+    }
+
+    // Tint a mesh grey (obsolete) or restore its original material
+    _applyObsoleteStyle(item, isObsolete) {
+        const visual = this.findMesh(item);
+        if (!visual) return;
+        visual.traverse(child => {
+            if (!child.isMesh) return;
+            if (isObsolete) {
+                if (!child.userData._origMat) child.userData._origMat = child.material;
+                const grey = child.userData._origMat.clone();
+                grey.color.setHex(0x555555);
+                grey.opacity = 0.4;
+                grey.transparent = true;
+                child.material = grey;
+            } else if (child.userData._origMat) {
+                child.material = child.userData._origMat;
+                delete child.userData._origMat;
+            }
+        });
     }
 
     cycleLabelMode(layerId) {
@@ -72,7 +92,8 @@ export class LayerManager {
 
         const hasName1 = layer.items.some(i => i.name1);
         const hasName2 = layer.items.some(i => i.name2);
-        const maxMode  = hasName2 ? 2 : hasName1 ? 1 : 0;
+        const hasName3 = layer.items.some(i => i.name3);
+        const maxMode  = hasName3 ? 3 : hasName2 ? 2 : hasName1 ? 1 : 0;
 
         const current = this._labelModes[layerId] ?? 0;
         const next    = current >= maxMode ? 0 : current + 1;
@@ -83,8 +104,26 @@ export class LayerManager {
             const item = child.userData.item;
             if (!item) return;
 
+            const isObsoleteNow = next    === 3 && item.name3 === '-';
+            const wasObsolete   = current === 3 && item.name3 === '-';
+
+            // Apply / remove obsolete mesh tint when the state changes
+            if (isObsoleteNow !== wasObsolete) {
+                this._applyObsoleteStyle(item, isObsoleteNow);
+            }
+
+            if (isObsoleteNow) {
+                child.visible = false;
+                return;
+            }
+            if (wasObsolete) {
+                // Only restore if global label toggle allows it
+                child.visible = this._labelsVisible;
+            }
+
             const newText = next === 1 ? (item.name1 || item.name) :
                             next === 2 ? (item.name2 || item.name) :
+                            next === 3 ? (item.name3 || item.name) :
                             item.name;
             const el = child.element;
 
@@ -134,6 +173,7 @@ export class LayerManager {
             const isVisible = (cfg.RenderType === 'area' || cfg.RenderType === 'flow') ? true : (cfg.id === 'it_dev');
             this.createLayer(cfg.id, cfg.name, cfg.color, isVisible, cfg.icon, cfg.RenderType);
             this.layers[cfg.id].group_name = cfg.Group || 'Other';
+            this.layers[cfg.id].popup = !!cfg.Popup;
             this.layerToTypesMap[cfg.id] = [];
         });
 

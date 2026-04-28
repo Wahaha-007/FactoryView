@@ -1,16 +1,41 @@
 export class DataLoader {
-    constructor() {}
+    constructor() {
+        this._blobBase = null; // set by fetchBlobBase() if on Vercel
+    }
+
+    // Call once at startup. Silently skips on local dev.
+    async fetchBlobBase() {
+        try {
+            const res = await fetch('/api/asset-url');
+            if (res.ok) {
+                const { blobBase } = await res.json();
+                this._blobBase = blobBase || null;
+            }
+        } catch { /* local dev — no API route */ }
+    }
+
+    // Resolve the actual URL to use: prefer blob version if available
+    async _resolveUrl(staticPath) {
+        if (!this._blobBase) return staticPath;
+        const filename  = staticPath.split('/').pop();
+        const blobUrl   = `${this._blobBase}/factory/${filename}`;
+        try {
+            const test = await fetch(blobUrl, { method: 'HEAD' });
+            if (test.ok) return blobUrl;
+        } catch {}
+        return staticPath;
+    }
 
     async loadPresets(url) {
         try {
-            const wb = await this.fetchWorkbook(url);
+            const wb = await this.fetchWorkbook(await this._resolveUrl(url));
             return wb.Sheets['Presets'] ? XLSX.utils.sheet_to_json(wb.Sheets['Presets']) : [];
         } catch { return []; }
     }
 
     async loadSystemConfig(url) {
         try {
-            const workbook = await this.fetchWorkbook(url);
+            const workbook = await this.fetchWorkbook(await this._resolveUrl(url));
             const layers = workbook.Sheets['Layers'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Layers']) : [];
             const types  = workbook.Sheets['Types']  ? XLSX.utils.sheet_to_json(workbook.Sheets['Types'])  : [];
             const floors = workbook.Sheets['Floors'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Floors']) : [];
@@ -22,8 +47,9 @@ export class DataLoader {
     }
 
     async loadFloorData(url) {
+        url = await this._resolveUrl(url);
         // Standard columns — anything else becomes an "extra" shown in Details panel
-        const STANDARD_COLS = new Set(['Name', 'Name1', 'Name2', 'Type', 'X', 'Y', 'X1', 'Y1', 'X2', 'Y2', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'FontSize', 'Points', 'Speed', 'DashSize', 'GapSize', 'Tension', 'Shape', 'ShowLine', 'Product', 'Document']);
+        const STANDARD_COLS = new Set(['Name', 'Name1', 'Name2', 'Name3', 'Type', 'X', 'Y', 'X1', 'Y1', 'X2', 'Y2', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'FontSize', 'Points', 'Speed', 'DashSize', 'GapSize', 'Tension', 'Shape', 'ShowLine', 'Product', 'Document']);
 
         try {
             const workbook = await this.fetchWorkbook(url);
@@ -75,6 +101,7 @@ export class DataLoader {
                         name:     row.Name  || '',
                         name1:    row.Name1 || null,
                         name2:    row.Name2 || null,
+                        name3:    row.Name3 != null ? String(row.Name3) : null,
                         type:     row.Type,
                         x:        itemX,
                         y:        itemY,

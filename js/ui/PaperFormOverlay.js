@@ -46,8 +46,14 @@ export class PaperFormOverlay {
             schemaEl.appendChild(chip);
         });
 
-        const docUrl = item.document ? item.document.replace(/^assets\/docs\//, '/api/docs/') : '';
+        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        const docUrl = item.document
+            ? (isLocal ? item.document : item.document.replace(/^assets\/docs\//, '/api/docs/'))
+            : '';
         document.getElementById('paper-overlay-iframe').src = docUrl ? `${docUrl}#toolbar=0` : '';
+
+        const stamp = document.getElementById('paper-obsolete-stamp');
+        if (stamp) stamp.style.display = item.name3 === '-' ? 'flex' : 'none';
 
         this._reposition();
         this.el.style.display = 'flex';

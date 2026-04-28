@@ -38,6 +38,14 @@
         </div>
             <!-- ... existing content ... -->
         <div class="divider"></div>
+        <div id="admin-panel">
+            <div id="admin-panel-header" class="collapsible-header">
+                <span>📁 Data Files</span>
+                <span id="admin-panel-arrow">▸</span>
+            </div>
+            <div id="admin-panel-body" style="display:none;"></div>
+        </div>
+        <div class="divider"></div>
         <h3>Editor</h3>
         <button id="btn-edit-mode">Enter Edit Mode</button>
         <button id="btn-export" style="display:none; background:#28a745;">Save & Export XLSX</button>
@@ -89,7 +97,28 @@
                     <div class="po-section-label" style="margin-top:14px;">Data Fields</div>
                     <div id="po-schema"></div>
                 </div>
-                <iframe id="paper-overlay-iframe" src="" frameborder="0"></iframe>
+                <div id="paper-iframe-wrap">
+                    <iframe id="paper-overlay-iframe" src="" frameborder="0"></iframe>
+                    <div id="paper-obsolete-stamp" style="display:none;">OBSOLETE</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item Popup (machine / equipment photo + specs) -->
+        <div id="item-popup">
+            <div id="item-popup-header">
+                <span id="item-popup-title"></span>
+                <button id="item-popup-close" title="Close (Esc)">✕</button>
+            </div>
+            <div id="item-popup-body">
+                <div id="item-popup-photo-wrap" style="display:none;">
+                    <img id="item-popup-photo" src="" alt="Equipment photo">
+                </div>
+                <div id="item-popup-info">
+                    <div id="item-popup-desc"></div>
+                    <div id="item-popup-status-row"></div>
+                    <div id="item-popup-specs"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -264,6 +293,17 @@
             <button id="users-close" style="width:auto; background:#555;">Close</button>
         </div>
     </div>
+
+    <!-- Admin panel collapse toggle -->
+    <script>
+        document.getElementById('admin-panel-header').addEventListener('click', function() {
+            const body  = document.getElementById('admin-panel-body');
+            const arrow = document.getElementById('admin-panel-arrow');
+            const open  = body.style.display === 'none';
+            body.style.display  = open ? 'block' : 'none';
+            arrow.textContent   = open ? '▾' : '▸';
+        });
+    </script>
 
     <!-- Main Logic -->
     <script type="module" src="js/main.js"></script>
