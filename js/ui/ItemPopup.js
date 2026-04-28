@@ -17,6 +17,14 @@ export class ItemPopup {
         });
     }
 
+    // Rewrite private blob URLs to go through /api/photo proxy
+    _resolvePhotoUrl(raw) {
+        if (!raw) return '';
+        const m = raw.match(/private\.blob\.vercel-storage\.com\/(.+)$/);
+        if (m) return `/api/photo?path=${encodeURIComponent(m[1])}`;
+        return raw; // public URL or local path — use as-is
+    }
+
     show(item) {
         if (!this.el) return;
 
@@ -25,7 +33,7 @@ export class ItemPopup {
         // Photo (Vercel Blob URL stored in extras.Photo)
         const photoWrap = document.getElementById('item-popup-photo-wrap');
         const photoImg  = document.getElementById('item-popup-photo');
-        const photoUrl  = item.extras?.Photo || item.photo || '';
+        const photoUrl  = this._resolvePhotoUrl(item.extras?.Photo || item.photo || '');
         if (photoUrl) {
             photoImg.src = photoUrl;
             photoWrap.style.display = 'block';
