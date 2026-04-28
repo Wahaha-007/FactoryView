@@ -66,7 +66,8 @@ export class LayerManager {
         return layer.items.some(item => item.name1 || item.name2 || item.name3);
     }
 
-    // Tint a mesh grey (obsolete) or restore its original material
+    // Tint a mesh grey (obsolete) or restore its original material.
+    // Handles both single-material and multi-material (array) meshes.
     _applyObsoleteStyle(item, isObsolete) {
         const visual = this.findMesh(item);
         if (!visual) return;
@@ -74,11 +75,15 @@ export class LayerManager {
             if (!child.isMesh) return;
             if (isObsolete) {
                 if (!child.userData._origMat) child.userData._origMat = child.material;
-                const grey = child.userData._origMat.clone();
-                grey.color.setHex(0x555555);
-                grey.opacity = 0.4;
-                grey.transparent = true;
-                child.material = grey;
+                const orig = child.userData._origMat;
+                const makeGrey = (m) => {
+                    const g = m.clone();
+                    g.color.setHex(0x555555);
+                    g.opacity = 0.4;
+                    g.transparent = true;
+                    return g;
+                };
+                child.material = Array.isArray(orig) ? orig.map(makeGrey) : makeGrey(orig);
             } else if (child.userData._origMat) {
                 child.material = child.userData._origMat;
                 delete child.userData._origMat;
