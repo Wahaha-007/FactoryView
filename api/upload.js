@@ -7,6 +7,8 @@ module.exports.config = { api: { bodyParser: false } };
 const ALLOWED_FILES = new Set([
     'floor_1_data.xlsx',
     'floor_2_data.xlsx',
+    'floor_3_data.xlsx',
+    'floor_4_data.xlsx',
     'system_config.xlsx',
     'scene_presets.xlsx',
 ]);
@@ -62,7 +64,7 @@ module.exports = async function handler(req, res) {
 
     // Upload to Vercel Blob with a stable path (no random suffix)
     const blob = await put(`factory/${filename}`, buffer, {
-        access: 'public',
+        access: 'private',
         addRandomSuffix: false,
         contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });

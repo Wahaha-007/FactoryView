@@ -15,15 +15,11 @@ export class DataLoader {
     }
 
     // Resolve the actual URL to use: prefer blob version if available
-    async _resolveUrl(staticPath) {
-        if (!this._blobBase) return staticPath;
-        const filename  = staticPath.split('/').pop();
-        const blobUrl   = `${this._blobBase}/factory/${filename}`;
-        try {
-            const test = await fetch(blobUrl, { method: 'HEAD' });
-            if (test.ok) return blobUrl;
-        } catch {}
-        return staticPath;
+    async resolveUrl(staticPath) {
+        if (!this.blobBase) return staticPath;
+        const filename = staticPath.split('/').pop();
+        // Use proxy URL instead of direct blob URL
+        return `api/excel?file=${encodeURIComponent(filename)}`;
     }
 
     async loadPresets(url) {
