@@ -24,14 +24,14 @@ export class DataLoader {
 
     async loadPresets(url) {
         try {
-            const wb = await this.fetchWorkbook(await this._resolveUrl(url));
+            const wb = await this.fetchWorkbook(await this.resolveUrl(url));
             return wb.Sheets['Presets'] ? XLSX.utils.sheet_to_json(wb.Sheets['Presets']) : [];
         } catch { return []; }
     }
 
     async loadSystemConfig(url) {
         try {
-            const workbook = await this.fetchWorkbook(await this._resolveUrl(url));
+            const workbook = await this.fetchWorkbook(await this.resolveUrl(url), url);
             const layers = workbook.Sheets['Layers'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Layers']) : [];
             const types  = workbook.Sheets['Types']  ? XLSX.utils.sheet_to_json(workbook.Sheets['Types'])  : [];
             const floors = workbook.Sheets['Floors'] ? XLSX.utils.sheet_to_json(workbook.Sheets['Floors']) : [];
@@ -43,7 +43,7 @@ export class DataLoader {
     }
 
     async loadFloorData(url) {
-        url = await this._resolveUrl(url);
+        url = await this.resolveUrl(url);
         // Standard columns — anything else becomes an "extra" shown in Details panel
         const STANDARD_COLS = new Set(['Name', 'Name1', 'Name2', 'Name3', 'Type', 'X', 'Y', 'X1', 'Y1', 'X2', 'Y2', 'Description', 'Status', 'LastAudit', 'Color', 'Width', 'Height', 'Opacity', 'BorderColor', 'BorderThickness', 'FontSize', 'Points', 'Speed', 'DashSize', 'GapSize', 'Tension', 'Shape', 'ShowLine', 'Product', 'Document']);
 
@@ -135,11 +135,22 @@ export class DataLoader {
         }
     }
 
-    async fetchWorkbook(url) {
-        const uniqueUrl = `${url}?t=${new Date().getTime()}`;
-        const response = await fetch(uniqueUrl);
-        if (!response.ok) throw new Error(`HTTP ${response.status} - ${url}`);
-        const arrayBuffer = await response.arrayBuffer();
-        return XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+    async fetchWorkbook(url, fallbackUrl = null) {
+        try {
+            const uniqueUrl = `${url}${url.includes('?') ? '&' : '?'}t=${new Date().getTime()}`;
+            const response = await fetch(uniqueUrl);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const arrayBuffer = await response.arrayBuffer();
+            return XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+        } catch (e) {
+            if (fallbackUrl && fallbackUrl !== url) {
+                // retry with static assets/ file
+                const response = await fetch(fallbackUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status} - ${fallbackUrl}`);
+                const arrayBuffer = await response.arrayBuffer();
+                return XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+            }
+            throw e;
+        }
     }
 }
